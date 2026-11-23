@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ridoy AI - Custom Assistant</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            margin: 0;
+            padding: 12px 10px calc(18px + env(safe-area-inset-bottom));
+            background: radial-gradient(circle at 20% 20%, #141b33 0%, #090b12 65%, #05060a 100%);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100dvh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            max-height: 820px;
+            background: linear-gradient(180deg, rgba(20, 25, 42, 0.96) 0%, rgba(12, 15, 26, 0.98) 100%);
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.78), 0 0 0 1px rgba(0, 229, 255, 0.14);
+            position: relative;
+        }
+
+        /* অটোমেটিক ব্যাকগ্রাউন্ড AI গ্রিড ও অরোরা */
+        .ambient-bg {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .ambient-grid {
+            position: absolute;
+            inset: -40%;
+            background-image:
+                linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 46, 147, 0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+            transform: perspective(600px) rotateX(48deg);
+            animation: gridDrift 14s linear infinite;
+        }
+        .orb-glow-1 {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.24), transparent 70%);
+            top: -40px;
+            left: -40px;
+            animation: orbMoveA 7s ease-in-out infinite;
+        }
+        .orb-glow-2 {
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 46, 147, 0.22), transparent 70%);
+            bottom: -50px;
+            right: -40px;
+            animation: orbMoveB 8.5s ease-in-out infinite;
+        }
+
+        @keyframes gridDrift {
+            0% { transform: perspective(600px) rotateX(48deg) translateY(0); }
+            100% { transform: perspective(600px) rotateX(48deg) translateY(32px); }
+        }
+        @keyframes orbMoveA {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(35px, 28px) scale(1.15); }
+        }
+        @keyframes orbMoveB {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-32px, -25px) scale(1.12); }
+        }
+
+        /* হেডার ও লোগো */
+        .header {
+            background: rgba(24, 30, 50, 0.92);
+            backdrop-filter: blur(12px);
+            padding: 11px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 16px;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 10;
+            gap: 8px;
+        }
+        .header-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+        .logo-box {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #00e5ff, #ff2e93);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            flex-shrink: 0;
+            box-shadow: 0 0 14px rgba(0, 229, 255, 0.35);
+            animation: miniLogoSpin3D 5.5s ease-in-out infinite;
+        }
+        .logo-box img { width: 100%; height: 100%; object-fit: cover; }
+        @keyframes miniLogoSpin3D {
+            0%, 100% { transform: perspective(240px) rotateY(0deg) scale(1); }
+            50% { transform: perspective(240px) rotateY(180deg) scale(1.06); }
+        }
+
+        .dots-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(45, 54, 82, 0.85);
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* বাম ও ডান থ্রি-ডট ড্রপডাউন প্যানেল */
+        .menu-backdrop {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 14;
+        }
+        .menu-backdrop.active { display: block; }
+
+        .dot-dropdown {
+            display: none;
+            position: absolute;
+            top: 56px;
+            width: 270px;
+            max-height: 72%;
+            background: rgba(21, 27, 46, 0.98);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 229, 255, 0.25);
+            border-radius: 16px;
+            padding: 12px;
+            z-index: 15;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.72);
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+        }
+        .dot-dropdown.left-menu { left: 10px; }
+        .dot-dropdown.right-menu { right: 10px; }
+        .dot-dropdown.active { display: flex; }
+
+        .menu-gmail-box {
+            background: rgba(12, 16, 28, 0.9);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 11px;
+            padding: 9px 11px;
+        }
+        .menu-gmail-label { font-size: 11px; color: #7ae8ff; font-weight: 700; }
+        .menu-gmail-value { font-size: 13px; color: #ffffff; word-break: break-all; margin-top: 2px; }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0095ff, #7c4dff);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .saved-chats-title { font-size: 12px; color: #b8c2dc; font-weight: 700; margin-top: 2px; }
+        .saved-chat-list { display: flex; flex-direction: column; gap: 6px; }
+        .saved-chat-item {
+            background: rgba(34, 42, 68, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 10px;
+            padding: 8px 10px;
+            cursor: pointer;
+            text-align: left;
+            color: #eef2fc;
+            font-size: 12px;
+        }
+        .saved-chat-item.active {
+            border-color: #00e5ff;
+            background: rgba(0, 149, 255, 0.22);
+        }
+        .saved-chat-snippet { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+        .saved-chat-meta { font-size: 10px; color: #9aa6c7; margin-top: 2px; }
+
+        .voice-option-btn {
+            width: 100%;
+            padding: 9px 11px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(32, 39, 62, 0.88);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .voice-option-btn.selected {
+            border-color: #ff4da6;
+            background: linear-gradient(135deg, rgba(0, 149, 255, 0.25), rgba(255, 46, 147, 0.25));
+            color: #8cf0ff;
+        }
+
+        .menu-action-row { display: flex; gap: 6px; }
+        .menu-sec-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 9px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(42, 50, 78, 0.85);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .menu-sec-btn.danger { background: rgba(122, 28, 44, 0.88); border-color: rgba(255,110,130,0.35); }
+
+        /* ভিউ কন্টেইনার */
+        .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; position: relative; z-index: 2; }
+        .screen.active { display: flex; animation: screenFadeIn 0.45s ease; }
+        @keyframes screenFadeIn {
+            from { opacity: 0; transform: translateY(10px) scale(0.985); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* প্রিমিয়াম 3D AI লোগো ও অ্যানিমেশন স্টেজ */
+        .ai-3d-stage {
+            position: relative;
+            width: 146px;
+            height: 146px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 750px;
+        }
+        .ai-halo {
+            position: absolute;
+            width: 126px;
+            height: 126px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.28), rgba(255, 46, 147, 0.14), transparent 72%);
+            animation: haloPulse 2.8s ease-in-out infinite;
+        }
+        .ai-orbit-a {
+            position: absolute;
+            inset: 6px;
+            border-radius: 46% 54% 51% 49% / 48% 45% 55% 52%;
+            border: 2px solid transparent;
+            border-top-color: #00e5ff;
+            border-right-color: #7c4dff;
+            animation: orbit3DA 3.8s linear infinite;
+            box-shadow: 0 0 16px rgba(0, 229, 255, 0.28);
+        }
+        .ai-orbit-b {
+            position: absolute;
+            inset: 14px;
+            border-radius: 52% 48% 46% 54% / 54% 50% 50% 46%;
+            border: 2px solid transparent;
+            border-bottom-color: #ff2e93;
+            border-left-color: #00e5ff;
+            animation: orbit3DB 5.2s linear infinite;
+        }
+        .ai-3d-logo-card {
+            position: relative;
+            width: 92px;
+            height: 92px;
+            border-radius: 28px;
+            background: linear-gradient(145deg, rgba(35, 46, 82, 0.96), rgba(14, 18, 32, 0.98));
+            border: 1.5px solid rgba(0, 229, 255, 0.45);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            box-shadow:
+                0 12px 28px rgba(0, 0, 0, 0.65),
+                0 0 24px rgba(0, 229, 255, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.25);
+            animation: logo3DAutoMove 5.5s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+        .ai-3d-emblem {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #00f0ff, #ffffff, #ff4da6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transform: translateZ(16px);
+        }
+        .ai-wave-bars {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 20px;
+            margin-top: 4px;
+            transform: translateZ(12px);
+        }
+        .ai-wave-bars span {
+            width: 3.5px;
+            height: 7px;
+            border-radius: 4px;
+            background: linear-gradient(180deg, #00e5ff, #ff2e93);
+            animation: eqBounce 1.15s ease-in-out infinite;
+        }
+        .ai-wave-bars span:nth-child(2) { animation-delay: 0.14s; }
+        .ai-wave-bars span:nth-child(3) { animation-delay: 0.28s; }
+        .ai-wave-bars span:nth-child(4) { animation-delay: 0.42s; }
+        .ai-wave-bars span:nth-child(5) { animation-delay: 0.56s; }
+
+        @keyframes logo3DAutoMove {
+            0% { transform: rotateX(12deg) rotateY(-18deg) translateY(0px); }
+            25% { transform: rotateX(-10deg) rotateY(16deg) translateY(-6px); }
+            50% { transform: rotateX(14deg) rotateY(18deg) translateY(2px); }
+            75% { transform: rotateX(-12deg) rotateY(-16deg) translateY(-5px); }
+            100% { transform: rotateX(12deg) rotateY(-18deg) translateY(0px); }
+        }
+        @keyframes orbit3DA {
+            0% { transform: rotateX(62deg) rotateZ(0deg); }
+            100% { transform: rotateX(62deg) rotateZ(360deg); }
+        }
+        @keyframes orbit3DB {
+            0% { transform: rotateY(58deg) rotateZ(360deg); }
+            100% { transform: rotateY(58deg) rotateZ(0deg); }
+        }
+        @keyframes haloPulse {
+            0%, 100% { transform: scale(0.94); opacity: 0.7; }
+            50% { transform: scale(1.12); opacity: 1; }
+        }
+        @keyframes eqBounce {
+            0%, 100% { height: 6px; opacity: 0.65; }
+            50% { height: 19px; opacity: 1; }
+        }
+
+        /* প্রিমিয়াম লগইন, সাইনআপ ও ফরগেট পাসওয়ার্ড কার্ড */
+        .auth-box {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: auto 14px;
+            overflow-y: auto;
+            background: rgba(24, 30, 48, 0.78);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+        }
+        .auth-title { text-align: center; font-size: 20px; font-weight: 700; letter-spacing: 0.3px; }
+        .auth-sub { text-align: center; font-size: 13px; color: #b4bdd6; margin-bottom: 2px; }
+        .tab-switch { display: flex; background: rgba(14, 18, 30, 0.85); border-radius: 12px; padding: 4px; gap: 4px; border: 1px solid rgba(255,255,255,0.06); }
+        .tab-btn { flex: 1; padding: 8px; border: none; border-radius: 9px; background: transparent; color: #aeb8d2; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.25s ease; }
+        .tab-btn.active { background: linear-gradient(135deg, #007bff, #7c4dff); color: #fff; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.35); }
+        .auth-input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 11px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(15, 19, 32, 0.88);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .auth-input:focus { border-color: #00e5ff; box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.14); }
+        .forgot-row { display: flex; justify-content: flex-end; }
+        .link-btn { background: none; border: none; color: #5ce1ff; font-size: 13px; cursor: pointer; padding: 2px 0; text-decoration: underline; }
+        .primary-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #0095ff, #6a5cff);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0, 149, 255, 0.32);
+        }
+        .google-btn {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 11px;
+            background: rgba(255, 255, 255, 0.96);
+            color: #131722;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .auth-msg { font-size: 13px; text-align: center; min-height: 18px; color: #ff8a80; }
+        .auth-msg.success { color: #69f0ae; }
+
+        /* প্রিমিয়াম অ্যানিমেটেড হোম পেজ */
+        .home-box { padding: 18px 16px; display: flex; flex-direction: column; gap: 13px; margin: auto 0; overflow-y: auto; text-align: center; }
+        .home-card {
+            background: linear-gradient(155deg, rgba(32, 40, 66, 0.86), rgba(16, 20, 34, 0.94));
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 229, 255, 0.25);
+            border-radius: 20px;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            box-shadow: 0 16px 38px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        }
+        .home-badge {
+            background: linear-gradient(90deg, rgba(0, 229, 255, 0.16), rgba(255, 46, 147, 0.16));
+            color: #7ae8ff;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            border: 1px solid rgba(0, 229, 255, 0.32);
+        }
+        .home-user-email { font-size: 13px; color: #b8c1d9; word-break: break-all; }
+        .enter-ai-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 13px;
+            background: linear-gradient(135deg, #00a8ff, #7b2cbf, #ff2e93);
+            background-size: 200% 200%;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(255, 46, 147, 0.32);
+            animation: btnGradientShift 4.5s ease infinite;
+        }
+        @keyframes btnGradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .logout-btn {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid rgba(255, 120, 140, 0.25);
+            border-radius: 12px;
+            background: rgba(34, 39, 58, 0.85);
+            color: #ff8e9e;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* চ্যাট উইন্ডো ও স্পিকার বাটন */
+        #chat-window { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message { max-width: 82%; padding: 10px 14px; border-radius: 12px; font-size: 15px; line-height: 1.4; word-wrap: break-word; }
+        .user { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 2px; }
+        .ai { align-self: flex-start; background: rgba(44, 52, 74, 0.92); color: #eef2fc; border-bottom-left-radius: 2px; border: 1px solid rgba(255,255,255,0.06); }
+        .error-msg { align-self: flex-start; background: #4a1c1c; color: #ff8a80; border: 1px solid #ff5252; border-bottom-left-radius: 2px; font-size: 13px; }
+        .status-msg { align-self: flex-start; background: rgba(37, 42, 58, 0.9); color: #c5cde0; font-size: 13px; font-style: italic; border-bottom-left-radius: 2px; }
+        .chat-img { max-width: 100%; border-radius: 8px; margin-top: 6px; display: block; }
+        .dl-link { display: inline-block; margin-top: 8px; padding: 6px 12px; background: #28a745; color: #fff; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: bold; }
+
+        .msg-footer {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .speaker-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #7ae8ff;
+            border: 1px solid rgba(122, 232, 255, 0.28);
+            border-radius: 8px;
+            padding: 4px 9px;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .speaker-btn.speaking {
+            background: rgba(255, 46, 147, 0.25);
+            color: #ff80bf;
+            border-color: rgba(255, 46, 147, 0.55);
+        }
+
+        /* AI ইমেজ প্রম্পট মোডাল */
+        #aiImageModal {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(14, 17, 27, 0.97);
+            z-index: 20;
+            flex-direction: column;
+            padding: 15px;
+            gap: 12px;
+            overflow-y: auto;
+        }
+        #aiImageModal.active { display: flex; }
+        .modal-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 8px; }
+        .preview-box { background: #10131d; border-radius: 10px; padding: 10px; display: flex; justify-content: center; align-items: center; min-height: 170px; max-height: 230px; overflow: hidden; }
+        .preview-box img { max-width: 100%; max-height: 210px; border-radius: 8px; }
+        #imgEditPrompt { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #444; background: #222736; color: #fff; font-size: 14px; outline: none; min-height: 75px; resize: vertical; }
+        .modal-actions { display: flex; gap: 8px; margin-top: auto; }
+        .action-btn { flex: 1; padding: 11px; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; color: #fff; }
+        .btn-cancel { background: #444; }
+        .btn-generate { background: #28a745; }
+
+        /* ইনপুট এরিয়া */
+        .input-area {
+            display: flex;
+            padding: 10px 12px 14px;
+            margin-bottom: 14px;
+            background: rgba(26, 31, 48, 0.95);
+            gap: 7px;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            border-radius: 0 0 20px 20px;
+        }
+        #userInput { flex: 1; padding: 11px 14px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); background: #333a50; color: white; outline: none; font-size: 15px; min-width: 0; }
+        .btn { width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .img-btn { background: #28a745; color: white; }
+        .send-btn { background: #007bff; color: white; }
+        .voice-btn { background: #e91e63; color: white; }
+        .voice-btn.listening { animation: pulse 1s infinite; background: #ff0000; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- অটোমেটিক ব্যাকগ্রাউন্ড AI অ্যানিমেশন -->
+    <div class="ambient-bg">
+        <div class="orb-glow-1"></div>
+        <div class="orb-glow-2"></div>
+        <div class="ambient-grid"></div>
+    </div>
+
+    <!-- মেনু ব্যাকড্রপ -->
+    <div class="menu-backdrop" id="menuBackdrop" onclick="closeAllDotMenus()"></div>
+
+    <!-- বাম থ্রি-ডট মেনু (জিমেইল, নিউ চ্যাট ও অটোমেটিক সেভ হওয়া মেসেজ লিস্ট) -->
+    <div class="dot-dropdown left-menu" id="leftDotMenu">
+        <div class="menu-gmail-box">
+            <div class="menu-gmail-label">লগইন জিমেইল</div>
+            <div class="menu-gmail-value" id="leftMenuGmail">লগইন করা নেই</div>
+        </div>
+
+        <button type="button" class="new-chat-btn" onclick="startNewChatSession()">➕ নিউ চ্যাট</button>
+
+        <div class="saved-chats-title">💾 অটোমেটিক সেভ হওয়া চ্যাট</div>
+        <div class="saved-chat-list" id="savedChatList">
+            <div class="saved-chat-meta">এখনও কোনো চ্যাট সেভ হয়নি।</div>
+        </div>
+    </div>
+
+    <!-- ডান থ্রি-ডট মেনু (জিমেইল, ভয়েস চেঞ্জার: মেয়ে/ছেলে/ডিফল্ট, হোম ও লগআউট) -->
+    <div class="dot-dropdown right-menu" id="rightDotMenu">
+        <div class="menu-gmail-box">
+            <div class="menu-gmail-label">অ্যাকাউন্ট জিমেইল</div>
+            <div class="menu-gmail-value" id="rightMenuGmail">লগইন করা নেই</div>
+        </div>
+
+        <div class="saved-chats-title">🎙️ ভয়েস চেঞ্জ করুন</div>
+        <button type="button" class="voice-option-btn selected" id="voiceOptFemale" onclick="selectVoiceProfile('female')">
+            <span>👩 মেয়ে মানুষের ভয়েস</span>
+            <span id="checkFemale">✓</span>
+        </button>
+        <button type="button" class="voice-option-btn" id="voiceOptMale" onclick="selectVoiceProfile('male')">
+            <span>👨 ছেলে মানুষের ভয়েস</span>
+            <span id="checkMale"></span>
+        </button>
+        <button type="button" class="voice-option-btn" id="voiceOptNatural" onclick="selectVoiceProfile('natural')">
+            <span>🤖 ন্যাচারাল / ডিফল্ট ভয়েস</span>
+            <span id="checkNatural"></span>
+        </button>
+
+        <div class="menu-action-row" style="margin-top:4px;">
+            <button type="button" class="menu-sec-btn" onclick="closeAllDotMenus(); showScreen('home');">হোম</button>
+            <button type="button" class="menu-sec-btn danger" onclick="closeAllDotMenus(); handleLogout();">লগআউট</button>
+        </div>
+    </div>
+
+    <!-- হেডার ও লোগো -->
+    <div class="header">
+        <div class="header-left">
+            <button type="button" class="dots-btn" id="leftDotsBtn" style="display:none;" onclick="toggleDotMenu('left')" title="চ্যাট ও জিমেইল মেনু">⋮</button>
+            <div class="logo-box" id="headerLogoBox">
+                <img id="headerLogoImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%2300e5ff'/><stop offset='100%25' stop-color='%23ff2e93'/></linearGradient></defs><circle cx='50' cy='50' r='48' fill='%23181818' stroke='url(%23g)' stroke-width='4'/><text x='50' y='63' font-size='42' font-family='Arial, sans-serif' font-weight='bold' fill='white' text-anchor='middle'>R</text></svg>" alt="Ridoy AI Logo">
+            </div>
+            <span id="headerTitle">Ridoy AI</span>
+        </div>
+        <button type="button" class="dots-btn" id="rightDotsBtn" style="display:none;" onclick="toggleDotMenu('right')" title="ভয়েস ও অ্যাকাউন্ট মেনু">⋮</button>
+    </div>
+
+    <!-- ১. প্রিমিয়াম 3D অ্যানিমেটেড লগইন, সাইনআপ ও ফরগেট পাসওয়ার্ড স্ক্রিন -->
+    <div id="authScreen" class="screen active">
+        <div class="auth-box">
+            <div class="ai-3d-stage">
+                <div class="ai-halo"></div>
+                <div class="ai-orbit-a"></div>
+                <div class="ai-orbit-b"></div>
+                <div class="ai-3d-logo-card">
+                    <div class="ai-3d-emblem">AI</div>
+                    <div class="ai-wave-bars">
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-title" id="authHeading">লগইন করুন</div>
+            <div class="auth-sub" id="authSub">স্মার্ট AI হোম পেজে প্রবেশ করে Ridoy AI ব্যবহার করুন</div>
+
+            <div class="tab-switch" id="authTabs">
+                <button class="tab-btn active" id="loginTabBtn" onclick="switchAuthMode('login')">লগইন</button>
+                <button class="tab-btn" id="signupTabBtn" onclick="switchAuthMode('signup')">সাইনআপ</button>
+            </div>
+
+            <input type="text" id="authName" class="auth-input" placeholder="আপনার নাম (সাইনআপের জন্য)" style="display:none;">
+            <input type="email" id="authEmail" class="auth-input" placeholder="ইমেইল ঠিকানা লিখুন">
+            <input type="password" id="authPassword" class="auth-input" placeholder="পাসওয়ার্ড লিখুন (কমপক্ষে ৬ অক্ষর)">
+
+            <div class="forgot-row" id="forgotRow">
+                <button type="button" class="link-btn" onclick="switchAuthMode('forgot')">পাসওয়ার্ড ভুলে গেছেন?</button>
+            </div>
+
+            <button class="primary-btn" id="authSubmitBtn" onclick="handleAuthAction()">লগইন করুন</button>
+
+            <button class="google-btn" id="googleLoginBtn" onclick="handleGoogleLogin()">
+                <span>G</span>
+                <span>Continue with Google</span>
+            </button>
+
+            <div style="text-align:center; display:none;" id="backToLoginWrap">
+                <button type="button" class="link-btn" onclick="switchAuthMode('login')">← লগইন পেজে ফিরে যান</button>
+            </div>
+
+            <div class="auth-msg" id="authMessage"></div>
+        </div>
+    </div>
+
+    <!-- ২. প্রিমিয়াম 3D AI অ্যানিমেশন সহ হোম পেজ -->
+    <div id="homeScreen" class="screen">
+        <div class="home-box">
+            <div class="home-card">
+                <div class="ai-3d-stage">
+                    <div class="ai-halo"></div>
+                    <div class="ai-orbit-a"></div>
+                    <div class="ai-orbit-b"></div>
+                    <div class="ai-3d-logo-card">
+                        <div class="ai-3d-emblem">R-AI</div>
+                        <div class="ai-wave-bars">
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <span class="home-badge">NEURAL AI HOME</span>
+                <h2 style="margin:4px 0;">স্বাগতম, <span id="homeUserName">ব্যবহারকারী</span>!</h2>
+                <div class="home-user-email" id="homeUserEmail"></div>
+                <p style="font-size:13px; color:#c4cce2; margin:6px 0 0;">নিচের বাটনে চাপ দিয়ে সরাসরি Ridoy AI চ্যাট, ভয়েস ও ইমেজ এডিটে প্রবেশ করুন।</p>
+            </div>
+
+            <button class="enter-ai-btn" onclick="showScreen('chat')">🚀 Ridoy AI-তে প্রবেশ করুন</button>
+            <button class="logout-btn" onclick="handleLogout()">লগআউট করুন</button>
+        </div>
+    </div>
+
+    <!-- ৩. চ্যাট স্ক্রিন -->
+    <div id="chatScreen" class="screen">
+        <div id="chat-window"></div>
+
+        <!-- ছবি দিয়ে AI এডিট করার মোডাল -->
+        <div id="aiImageModal">
+            <div class="modal-top">
+                <strong>✨ AI দিয়ে ছবি এডিট করুন</strong>
+                <button class="btn-cancel" style="padding:5px 10px; border-radius:8px; border:none; color:#fff; cursor:pointer;" onclick="closeAiImageModal()">✕</button>
+            </div>
+
+            <div class="preview-box">
+                <img id="selectedOriginalPreview" src="" alt="Selected Image">
+            </div>
+
+            <textarea id="imgEditPrompt" placeholder="লিখুন ছবিটা কেমন করে দেবো... (যেমন: সাদা কালো, ভিন্টেজ, সোনালি আলো, নিয়ন লুক, উজ্জ্বল)"></textarea>
+
+            <div class="modal-actions">
+                <button class="action-btn btn-cancel" onclick="closeAiImageModal()">বাতিল</button>
+                <button class="action-btn btn-generate" onclick="processAiImageEdit()">অটোমেটিক এডিট করুন</button>
+            </div>
+        </div>
+
+        <!-- ফাইল/ছবি পিকার -->
+        <input type="file" id="imageFileInput" accept="image/*" style="display:none" onchange="handleImageFileSelect(event)">
+
+        <!-- মেসেজ এবং ভয়েস ইনপুট -->
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="কিছু লিখুন..." onkeypress="if(event.key==='Enter') handleSend()">
+            <button class="btn img-btn" onclick="openImagePicker()" title="ছবি দিন">🖼️</button>
+            <button class="btn voice-btn" id="voiceBtn" onclick="startVoiceChat()" title="ভয়েসে কথা বলুন">🎤</button>
+            <button class="btn send-btn" onclick="handleSend()" title="পাঠান">➤</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase এবং Groq AI লজিক -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import {
+        getAuth,
+        onAuthStateChanged,
+        signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        sendPasswordResetEmail,
+        updateProfile,
+        GoogleAuthProvider,
+        signInWithPopup,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDnu0fxgwSacDIx39D88f5JQAMd5eijfaQ",
+        authDomain: "ridoy-bb390.firebaseapp.com",
+        projectId: "ridoy-bb390",
+        storageBucket: "ridoy-bb390.firebasestorage.app",
+        messagingSenderId: "119513770341",
+        appId: "1:119513770341:web:c96d978c886ec2d1bc598c"
+    };
+
+    const CUSTOM_LOGO_URL = "";
+    if (CUSTOM_LOGO_URL.trim()) {
+        document.getElementById("headerLogoImg").src = CUSTOM_LOGO_URL.trim();
+    }
+
+    const RAW_GROQ_KEY = "Gsk_SwqSsRCBOBiWxs6eprX1WGdyb3FYr6zTgFa0tCEXeYMt0tLLMIQr";
+    const GROQ_API_KEY = RAW_GROQ_KEY.trim().replace(/^Gsk_/, "gsk_");
+
+    const CREATOR_REPLY = "আমাকে হৃদয় স্যার বানিয়েছে।";
+    const HOME_ADDRESS_REPLY = "হৃদয় স্যারের বাসা পাবনা জেলায়। সম্পূর্ণ ঠিকানা: পাবনা জেলা, কাশিনাথপুর আমিনপুর থানা, উপজেলা বেড়া, গ্রাম বড় দুর্গাপুর, ইউনিয়ন ঢালারচর।";
+
+    let candidateModels = [
+        "llama-3.1-8b-instant",
+        "llama-3.3-70b-versatile",
+        "gemma2-9b-it"
+    ];
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    let authMode = "login";
+    let currentUser = null;
+    let activeSpeakerBtn = null;
+    let selectedVoiceType = localStorage.getItem("ridoy_ai_voice_type") || "female";
+    let currentSessionId = localStorage.getItem("ridoy_ai_current_session") || ("sess_" + Date.now());
+    let chatSessions = [];
+
+    function getLocalStorageKey() {
+        const uid = currentUser?.uid || "guest";
+        return `ridoy_ai_sessions_${uid}`;
+    }
+
+    function loadLocalSessions() {
+        try {
+            const raw = localStorage.getItem(getLocalStorageKey());
+            chatSessions = raw ? JSON.parse(raw) : [];
+        } catch (_) {
+            chatSessions = [];
+        }
+        renderSavedChatList();
+    }
+
+    function saveLocalSessions() {
+        try {
+            localStorage.setItem(getLocalStorageKey(), JSON.stringify(chatSessions));
+            localStorage.setItem("ridoy_ai_current_session", currentSessionId);
+        } catch (_) {}
+        renderSavedChatList();
+    }
+
+    function ensureCurrentSession() {
+        let sess = chatSessions.find(s => s.id === currentSessionId);
+        if (!sess) {
+            sess = {
+                id: currentSessionId,
+                title: "নতুন চ্যাট",
+                updatedAt: Date.now(),
+                messages: []
+            };
+            chatSessions.unshift(sess);
+        }
+        return sess;
+    }
+
+    function autoSaveMessageToSession(sender, text) {
+        if (!text) return;
+        const sess = ensureCurrentSession();
+        sess.messages.push({ sender, text, time: Date.now() });
+        sess.updatedAt = Date.now();
+        if (sender === "user") {
+            sess.title = text.slice(0, 32);
+        }
+        chatSessions.sort((a, b) => b.updatedAt - a.updatedAt);
+        saveLocalSessions();
+
+        addDoc(collection(db, "chat_history"), {
+            sender,
+            userId: currentUser?.uid || "guest",
+            sessionId: currentSessionId,
+            message: text,
+            timestamp: new Date()
+        }).catch(() => {});
+    }
+
+    function renderSavedChatList() {
+        const listEl = document.getElementById("savedChatList");
+        if (!chatSessions.length) {
+            listEl.innerHTML = `<div class="saved-chat-meta">এখনও কোনো চ্যাট সেভ হয়নি।</div>`;
+            return;
+        }
+        listEl.innerHTML = "";
+        chatSessions.slice(0, 15).forEach(sess => {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = `saved-chat-item ${sess.id === currentSessionId ? "active" : ""}`;
+            const count = sess.messages?.length || 0;
+            item.innerHTML = `
+                <div class="saved-chat-snippet">${escapeHtml(sess.title || "চ্যাট")}</div>
+                <div class="saved-chat-meta">${count}টি মেসেজ • সেভ করা</div>
+            `;
+            item.onclick = () => {
+                loadChatSession(sess.id);
+                closeAllDotMenus();
+            };
+            listEl.appendChild(item);
+        });
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, m => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        }[m]));
+    }
+
+    function renderWelcomeInChatWindow() {
+        const win = document.getElementById("chat-window");
+        win.innerHTML = "";
+        appendMessage(
+            "আসসালামু আলাইকুম! আমি Ridoy AI। বলুন কীভাবে সাহায্য করতে পারি?",
+            "ai",
+            null,
+            null,
+            true,
+            false
+        );
+    }
+
+    function loadChatSession(sessionId) {
+        currentSessionId = sessionId;
+        saveLocalSessions();
+        const win = document.getElementById("chat-window");
+        win.innerHTML = "";
+        const sess = chatSessions.find(s => s.id === sessionId);
+        if (!sess || !sess.messages || sess.messages.length === 0) {
+            renderWelcomeInChatWindow();
+            return;
+        }
+        sess.messages.forEach(m => {
+            appendMessage(m.text, m.sender, null, null, m.sender === "ai", false);
+        });
+    }
+
+    window.startNewChatSession = () => {
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            resetAllSpeakerButtons();
+        }
+        currentSessionId = "sess_" + Date.now();
+        saveLocalSessions();
+        renderWelcomeInChatWindow();
+        closeAllDotMenus();
+    };
+
+    function updateVoiceButtonsUI() {
+        document.getElementById("voiceOptFemale").classList.toggle("selected", selectedVoiceType === "female");
+        document.getElementById("voiceOptMale").classList.toggle("selected", selectedVoiceType === "male");
+        document.getElementById("voiceOptNatural").classList.toggle("selected", selectedVoiceType === "natural");
+
+        document.getElementById("checkFemale").innerText = selectedVoiceType === "female" ? "✓" : "";
+        document.getElementById("checkMale").innerText = selectedVoiceType === "male" ? "✓" : "";
+        document.getElementById("checkNatural").innerText = selectedVoiceType === "natural" ? "✓" : "";
+    }
+
+    window.selectVoiceProfile = (profile) => {
+        selectedVoiceType = profile;
+        localStorage.setItem("ridoy_ai_voice_type", profile);
+        updateVoiceButtonsUI();
+    };
+    updateVoiceButtonsUI();
+
+    window.toggleDotMenu = (side) => {
+        const leftMenu = document.getElementById("leftDotMenu");
+        const rightMenu = document.getElementById("rightDotMenu");
+        const backdrop = document.getElementById("menuBackdrop");
+
+        if (side === "left") {
+            const willOpen = !leftMenu.classList.contains("active");
+            rightMenu.classList.remove("active");
+            leftMenu.classList.toggle("active", willOpen);
+            backdrop.classList.toggle("active", willOpen);
+        } else {
+            const willOpen = !rightMenu.classList.contains("active");
+            leftMenu.classList.remove("active");
+            rightMenu.classList.toggle("active", willOpen);
+            backdrop.classList.toggle("active", willOpen);
+        }
+    };
+
+    window.closeAllDotMenus = () => {
+        document.getElementById("leftDotMenu").classList.remove("active");
+        document.getElementById("rightDotMenu").classList.remove("active");
+        document.getElementById("menuBackdrop").classList.remove("active");
+    };
+
+    function pickBestVoice(type) {
+        if (!('speechSynthesis' in window)) return null;
+        const voices = window.speechSynthesis.getVoices() || [];
+        if (!voices.length) return null;
+
+        const bnVoices = voices.filter(v => /bn|bengali|bangla/i.test(v.lang) || /bangla|bengali/i.test(v.name));
+        const pool = bnVoices.length > 0 ? bnVoices : voices;
+
+        const femaleHints = /female|woman|girl|priya|tanisha|samantha|victoria|zira|google हिन्दी|google বাংলা|nita|lekha/i;
+        const maleHints = /male|man|boy|rishi|prabhat|alex|daniel|david|google uk english male/i;
+
+        if (type === "female") {
+            return pool.find(v => femaleHints.test(v.name)) || pool[0];
+        }
+        if (type === "male") {
+            return pool.find(v => maleHints.test(v.name)) || pool[pool.length > 1 ? 1 : 0];
+        }
+        return pool[0];
+    }
+
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+        };
+    }
+
+    function resetAllSpeakerButtons() {
+        document.querySelectorAll(".speaker-btn.speaking").forEach(btn => {
+            btn.classList.remove("speaking");
+            btn.innerHTML = "🔊 শুনুন";
+        });
+        activeSpeakerBtn = null;
+    }
+
+    window.toggleSpeakMessage = (btnEl, textToSpeak) => {
+        if (!('speechSynthesis' in window)) {
+            alert("আপনার ব্রাউজারে ভয়েস রিডার সাপোর্ট করে না।");
+            return;
+        }
+
+        const isSameSpeaking = activeSpeakerBtn === btnEl && window.speechSynthesis.speaking;
+        window.speechSynthesis.cancel();
+        resetAllSpeakerButtons();
+
+        if (isSameSpeaking || !textToSpeak) {
+            return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        const chosenVoice = pickBestVoice(selectedVoiceType);
+        if (chosenVoice) {
+            utterance.voice = chosenVoice;
+        }
+        utterance.lang = chosenVoice?.lang || 'bn-BD';
+
+        if (selectedVoiceType === "female") {
+            utterance.pitch = 1.24;
+            utterance.rate = 1.0;
+        } else if (selectedVoiceType === "male") {
+            utterance.pitch = 0.78;
+            utterance.rate = 0.96;
+        } else {
+            utterance.pitch = 1.0;
+            utterance.rate = 1.0;
+        }
+
+        activeSpeakerBtn = btnEl;
+        btnEl.classList.add("speaking");
+        btnEl.innerHTML = "⏹ থামুন";
+
+        utterance.onend = () => resetAllSpeakerButtons();
+        utterance.onerror = () => resetAllSpeakerButtons();
+
+        window.speechSynthesis.speak(utterance);
+    };
+
+    function setAuthStatus(text, isSuccess = false) {
+        const msgEl = document.getElementById("authMessage");
+        msgEl.innerText = text;
+        msgEl.classList.toggle("success", isSuccess);
+    }
+
+    window.switchAuthMode = (mode) => {
+        authMode = mode;
+        const isLogin = mode === "login";
+        const isSignup = mode === "signup";
+        const isForgot = mode === "forgot";
+
+        document.getElementById("loginTabBtn").classList.toggle("active", isLogin);
+        document.getElementById("signupTabBtn").classList.toggle("active", isSignup);
+        document.getElementById("authTabs").style.display = isForgot ? "none" : "flex";
+        document.getElementById("authName").style.display = isSignup ? "block" : "none";
+        document.getElementById("authPassword").style.display = isForgot ? "none" : "block";
+        document.getElementById("forgotRow").style.display = isLogin ? "flex" : "none";
+        document.getElementById("googleLoginBtn").style.display = isForgot ? "none" : "flex";
+        document.getElementById("backToLoginWrap").style.display = isForgot ? "block" : "none";
+
+        if (isSignup) {
+            document.getElementById("authHeading").innerText = "নতুন অ্যাকাউন্ট তৈরি করুন";
+            document.getElementById("authSub").innerText = "সাইনআপ করে হোম পেজে প্রবেশ করুন";
+            document.getElementById("authSubmitBtn").innerText = "সাইনআপ করুন";
+        } else if (isForgot) {
+            document.getElementById("authHeading").innerText = "পাসওয়ার্ড রিসেট করুন";
+            document.getElementById("authSub").innerText = "আপনার রেজিস্টার্ড ইমেইলে রিসেট লিংক পাঠানো হবে";
+            document.getElementById("authSubmitBtn").innerText = "রিসেট লিংক পাঠান";
+        } else {
+            document.getElementById("authHeading").innerText = "লগইন করুন";
+            document.getElementById("authSub").innerText = "স্মার্ট AI হোম পেজে প্রবেশ করে Ridoy AI ব্যবহার করুন";
+            document.getElementById("authSubmitBtn").innerText = "লগইন করুন";
+        }
+
+        setAuthStatus("", false);
+    };
+
+    window.showScreen = (target) => {
+        closeAllDotMenus();
+        const authScreen = document.getElementById("authScreen");
+        const homeScreen = document.getElementById("homeScreen");
+        const chatScreen = document.getElementById("chatScreen");
+        const leftDotsBtn = document.getElementById("leftDotsBtn");
+        const rightDotsBtn = document.getElementById("rightDotsBtn");
+        const headerTitle = document.getElementById("headerTitle");
+
+        authScreen.classList.remove("active");
+        homeScreen.classList.remove("active");
+        chatScreen.classList.remove("active");
+
+        if (!currentUser) {
+            authScreen.classList.add("active");
+            leftDotsBtn.style.display = "none";
+            rightDotsBtn.style.display = "none";
+            headerTitle.innerText = "Ridoy AI";
+            return;
+        }
+
+        leftDotsBtn.style.display = "flex";
+        rightDotsBtn.style.display = "flex";
+
+        if (target === "chat") {
+            chatScreen.classList.add("active");
+            headerTitle.innerText = "Ridoy AI";
+            loadChatSession(currentSessionId);
+        } else {
+            homeScreen.classList.add("active");
+            headerTitle.innerText = "হোম পেজ";
+        }
+    };
+
+    window.handleAuthAction = async () => {
+        const nameInput = document.getElementById("authName").value.trim();
+        const email = document.getElementById("authEmail").value.trim();
+        const password = document.getElementById("authPassword").value;
+
+        setAuthStatus("", false);
+        if (!email) {
+            setAuthStatus("অনুগ্রহ করে ইমেইল ঠিকানা লিখুন।", false);
+            return;
+        }
+
+        try {
+            if (authMode === "forgot") {
+                await sendPasswordResetEmail(auth, email);
+                setAuthStatus("পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে। ইনবক্স বা স্প্যাম চেক করুন।", true);
+                return;
+            }
+
+            if (!password) {
+                setAuthStatus("অনুগ্রহ করে পাসওয়ার্ড লিখুন।", false);
+                return;
+            }
+
+            if (authMode === "signup") {
+                const cred = await createUserWithEmailAndPassword(auth, email, password);
+                if (nameInput && cred.user) {
+                    await updateProfile(cred.user, { displayName: nameInput });
+                }
+            } else {
+                await signInWithEmailAndPassword(auth, email, password);
+            }
+        } catch (err) {
+            setAuthStatus(err.message || "অথেনটিকেশনে সমস্যা হয়েছে।", false);
+        }
+    };
+
+    window.handleGoogleLogin = async () => {
+        setAuthStatus("", false);
+        try {
+            await signInWithPopup(auth, googleProvider);
+        } catch (err) {
+            setAuthStatus(err.message || "Google দিয়ে লগইন করতে সমস্যা হয়েছে।", false);
+        }
+    };
+
+    window.handleLogout = async () => {
+        try {
+            await signOut(auth);
+        } catch (_) {}
+    };
+
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        if (user) {
+            const emailText = user.email || "ইমেইল পাওয়া যায়নি";
+            document.getElementById("homeUserName").innerText = user.displayName || "ব্যবহারকারী";
+            document.getElementById("homeUserEmail").innerText = emailText;
+            document.getElementById("leftMenuGmail").innerText = emailText;
+            document.getElementById("rightMenuGmail").innerText = emailText;
+            loadLocalSessions();
+            showScreen("home");
+        } else {
+            document.getElementById("leftMenuGmail").innerText = "লগইন করা নেই";
+            document.getElementById("rightMenuGmail").innerText = "লগইন করা নেই";
+            showScreen("auth");
+        }
+    });
+
+    let savedMemories = [];
+
+    async function loadMemories() {
+        try {
+            const querySnapshot = await getDocs(collection(db, "ai_memory"));
+            savedMemories = [];
+            querySnapshot.forEach((doc) => {
+                if (doc.data().info) {
+                    savedMemories.push(doc.data().info);
+                }
+            });
+        } catch (error) {
+            console.error("মেমোরি লোড করতে সমস্যা হয়েছে:", error);
+        }
+    }
+    loadMemories();
+
+    function isNonChatModel(id) {
+        return /orpheus|whisper|tts|audio|guard|safeguard|embed|vision-only/i.test(id);
+    }
+
+    async function refreshChatModels() {
+        try {
+            const res = await fetch("https://api.groq.com/openai/v1/models", {
+                headers: { "Authorization": `Bearer ${GROQ_API_KEY}` }
+            });
+            const data = await res.json();
+            if (Array.isArray(data.data) && data.data.length > 0) {
+                const chatIds = data.data
+                    .map(m => m.id)
+                    .filter(id => !isNonChatModel(id));
+
+                const preferred = [
+                    "llama-3.1-8b-instant",
+                    "llama-3.3-70b-versatile",
+                    "gemma2-9b-it"
+                ];
+
+                const ordered = [
+                    ...preferred.filter(p => chatIds.includes(p)),
+                    ...chatIds.filter(id => !preferred.includes(id))
+                ];
+
+                if (ordered.length > 0) {
+                    candidateModels = ordered;
+                }
+            }
+        } catch (_) {}
+    }
+    refreshChatModels();
+
+    function isCreatorQuestion(q) {
+        const clean = q.toLowerCase().trim();
+        return (
+            clean.includes("তৈরি করেছে") ||
+            clean.includes("বানিয়েছে") ||
+            clean.includes("বানিয়েছে") ||
+            clean.includes("কে বানাইছে") ||
+            clean.includes("কে তৈরি করছে") ||
+            clean.includes("who made you") ||
+            clean.includes("who created you")
+        );
+    }
+
+    function isHomeAddressQuestion(q) {
+        const clean = q.toLowerCase().trim();
+        const mentionsRidoySir =
+            clean.includes("হৃদয় স্যার") ||
+            clean.includes("হৃদয় স্যার") ||
+            clean.includes("হৃদয় স্যারের") ||
+            clean.includes("হৃদয় স্যারের") ||
+            clean.includes("রিদয় স্যার") ||
+            clean.includes("রিদয় স্যার") ||
+            clean.includes("রিদয় স্যারের") ||
+            clean.includes("রিদয় স্যারের");
+
+        const asksLocation =
+            clean.includes("বাসা কোথায়") ||
+            clean.includes("বাসা কোথায়") ||
+            clean.includes("বাড়ি কোথায়") ||
+            clean.includes("বাড়ি কোথায়") ||
+            clean.includes("ঠিকানা") ||
+            clean.includes("কোথায় থাকে") ||
+            clean.includes("কোথায় থাকে") ||
+            clean.includes("বাড়ি কই") ||
+            clean.includes("বাসা কই");
+
+        return mentionsRidoySir && asksLocation;
+    }
+
+    async function callGroqChat(modelName, systemPrompt, userText) {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${GROQ_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: modelName,
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userText }
+                ],
+                temperature: 0.7
+            })
+        });
+        return await response.json();
+    }
+
+    window.handleSend = async (voiceText = null) => {
+        const input = document.getElementById('userInput');
+        const text = voiceText || input.value.trim();
+        if (!text) return;
+
+        appendMessage(text, 'user', null, null, false, true);
+        if (!voiceText) input.value = '';
+
+        if (isCreatorQuestion(text)) {
+            appendMessage(CREATOR_REPLY, "ai", null, null, true, true);
+            return;
+        }
+
+        if (isHomeAddressQuestion(text)) {
+            appendMessage(HOME_ADDRESS_REPLY, "ai", null, null, true, true);
+            return;
+        }
+
+        const memoryPart = savedMemories.length > 0
+            ? `\nঅতিরিক্ত মেমোরি:\n- ${savedMemories.join("\n- ")}`
+            : "";
+
+        const systemPrompt = `তুমি Ridoy AI। কেউ যদি জিজ্ঞাসা করে তোমাকে কে তৈরি করেছে বা কে বানিয়েছে, তাহলে উত্তর দেবে: "${CREATOR_REPLY}" কেউ যদি হৃদয় স্যারের বাসা বা ঠিকানা সম্পর্কে জিজ্ঞাসা করে, তাহলে উত্তর দেবে: "${HOME_ADDRESS_REPLY}" বাংলায় সংক্ষিপ্ত ও স্পষ্টভাবে উত্তর দাও।${memoryPart}`;
+        const statusEl = appendMessage("ভাবছি...", "status-msg", null, null, false, false);
+
+        try {
+            let data = null;
+
+            for (let i = 0; i < candidateModels.length; i++) {
+                const modelName = candidateModels[i];
+                data = await callGroqChat(modelName, systemPrompt, text);
+
+                if (!data.error) {
+                    candidateModels.splice(i, 1);
+                    candidateModels.unshift(modelName);
+                    break;
+                }
+
+                const errMsg = data.error.message || "";
+                const shouldTryNext =
+                    /does not exist|do not have access|requires terms acceptance|decommissioned|not found/i.test(errMsg);
+
+                if (!shouldTryNext) {
+                    break;
+                }
+            }
+
+            statusEl.remove();
+
+            if (data?.error) {
+                appendMessage(`❌ API Error: ${data.error.message}`, "error-msg", null, null, false, false);
+                return;
+            }
+
+            const reply = data?.choices?.[0]?.message?.content;
+            if (!reply) {
+                appendMessage("⚠️ কোনো উত্তর পাওয়া যায়নি।", "error-msg", null, null, false, false);
+                return;
+            }
+
+            appendMessage(reply, "ai", null, null, true, true);
+        } catch (error) {
+            statusEl.remove();
+            appendMessage(`❌ কানেকশন এরর: ${error.message}`, "error-msg", null, null, false, false);
+        }
+    };
+
+    function appendMessage(text, sender, imageDataUrl = null, downloadName = null, showSpeaker = false, shouldPersist = true) {
+        const win = document.getElementById('chat-window');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${sender}`;
+        if (text) {
+            const textSpan = document.createElement('div');
+            textSpan.innerText = text;
+            msgDiv.appendChild(textSpan);
+        }
+        if (imageDataUrl) {
+            const img = document.createElement('img');
+            img.src = imageDataUrl;
+            img.className = 'chat-img';
+            msgDiv.appendChild(img);
+
+            if (downloadName) {
+                const dl = document.createElement('a');
+                dl.href = imageDataUrl;
+                dl.download = downloadName;
+                dl.className = 'dl-link';
+                dl.innerText = '⬇ ছবি ডাউনলোড করুন';
+                msgDiv.appendChild(dl);
+            }
+        }
+        if (showSpeaker && text) {
+            const footer = document.createElement('div');
+            footer.className = 'msg-footer';
+            const spkBtn = document.createElement('button');
+            spkBtn.type = 'button';
+            spkBtn.className = 'speaker-btn';
+            spkBtn.innerHTML = '🔊 শুনুন';
+            spkBtn.onclick = () => window.toggleSpeakMessage(spkBtn, text);
+            footer.appendChild(spkBtn);
+            msgDiv.appendChild(footer);
+        }
+        win.appendChild(msgDiv);
+        win.scrollTop = win.scrollHeight;
+
+        if (shouldPersist && (sender === "user" || sender === "ai") && text) {
+            autoSaveMessageToSession(sender, text);
+        }
+
+        return msgDiv;
+    }
+
+    let currentSelectedDataUrl = "";
+
+    window.openImagePicker = () => {
+        const fileInput = document.getElementById("imageFileInput");
+        fileInput.value = "";
+        fileInput.click();
+    };
+
+    window.handleImageFileSelect = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            currentSelectedDataUrl = e.target.result;
+            document.getElementById("selectedOriginalPreview").src = currentSelectedDataUrl;
+            document.getElementById("imgEditPrompt").value = "";
+            document.getElementById("aiImageModal").classList.add("active");
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.closeAiImageModal = () => {
+        document.getElementById("aiImageModal").classList.remove("active");
+    };
+
+    function buildSmartEditCanvas(imgEl, promptText) {
+        const p = (promptText || "").toLowerCase();
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const maxDim = 900;
+        let w = imgEl.naturalWidth || imgEl.width;
+        let h = imgEl.naturalHeight || imgEl.height;
+        if (w > maxDim || h > maxDim) {
+            const ratio = Math.min(maxDim / w, maxDim / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+        }
+        canvas.width = w;
+        canvas.height = h;
+
+        let filterStr = "brightness(106%) contrast(112%) saturate(120%)";
+
+        if (/black|white|b&w|bw|সাদা কালো|সাদাকালো|mono|grey|gray/.test(p)) {
+            filterStr = "grayscale(100%) contrast(120%) brightness(104%)";
+        } else if (/vintage|retro|old|ভিন্টেজ|পুরানো/.test(p)) {
+            filterStr = "sepia(55%) contrast(110%) brightness(98%) saturate(85%)";
+        } else if (/warm|golden|sunset|গরম|সোনালি/.test(p)) {
+            filterStr = "sepia(28%) saturate(135%) contrast(110%) brightness(106%)";
+        } else if (/cool|cyber|neon|night|নীল|নিয়ন|রাত/.test(p)) {
+            filterStr = "hue-rotate(190deg) saturate(140%) contrast(118%) brightness(102%)";
+        } else if (/bright|glow|light|উজ্জ্বল|আলো/.test(p)) {
+            filterStr = "brightness(122%) contrast(108%) saturate(118%)";
+        } else if (/soft|blur|dream|anime|cartoon|সফট|ব্লার|এনিমে|কার্টুন/.test(p)) {
+            filterStr = "contrast(118%) saturate(145%) brightness(108%)";
+        }
+
+        ctx.filter = filterStr;
+        ctx.drawImage(imgEl, 0, 0, w, h);
+        return canvas.toDataURL("image/jpeg", 0.9);
+    }
+
+    window.processAiImageEdit = async () => {
+        const promptText = document.getElementById("imgEditPrompt").value.trim() || "enhance photo quality naturally";
+        const imgData = currentSelectedDataUrl;
+        if (!imgData) return;
+
+        closeAiImageModal();
+        appendMessage(`নির্দেশনা: "${promptText}"`, "user", imgData, null, false, true);
+        const statusEl = appendMessage("ছবি অটোমেটিক এডিট করা হচ্ছে...", "status-msg", null, null, false, false);
+
+        try {
+            const tempImg = new Image();
+            tempImg.src = imgData;
+            await new Promise((resolve, reject) => {
+                tempImg.onload = resolve;
+                tempImg.onerror = reject;
+            });
+
+            const editedUrl = buildSmartEditCanvas(tempImg, promptText);
+            statusEl.remove();
+            appendMessage(
+                `আপনার নির্দেশনা ("${promptText}") অনুযায়ী ছবিটি এডিট করা হয়েছে:`,
+                "ai",
+                editedUrl,
+                `ridoy-ai-edit-${Date.now()}.jpg`,
+                true,
+                true
+            );
+        } catch (err) {
+            statusEl.remove();
+            appendMessage(`❌ ছবি এডিট করতে সমস্যা হয়েছে: ${err.message}`, "error-msg", null, null, false, false);
+        }
+    };
+
+    let listenStatusEl = null;
+
+    window.startVoiceChat = () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            appendMessage("⚠️ এই ব্রাউজারে ভয়েস রিকগনিশন সাপোর্ট করে না। অনুগ্রহ করে Google Chrome ব্যবহার করুন।", "error-msg", null, null, false, false);
+            return;
+        }
+
+        if (location.protocol !== "https:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+            appendMessage("⚠️ মাইক্রোফোন ব্যবহারের জন্য পেজটি HTTPS লিংকে ওপেন করুন।", "error-msg", null, null, false, false);
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'bn-BD';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        const voiceBtn = document.getElementById('voiceBtn');
+
+        recognition.onstart = () => {
+            voiceBtn.classList.add('listening');
+            if (listenStatusEl) listenStatusEl.remove();
+            listenStatusEl = appendMessage("🎤 শুনছি... কথা বলুন", "status-msg", null, null, false, false);
+        };
+
+        recognition.onresult = (event) => {
+            if (listenStatusEl) {
+                listenStatusEl.remove();
+                listenStatusEl = null;
+            }
+            const transcript = event.results[0][0].transcript;
+            if (transcript) {
+                handleSend(transcript);
+            }
+        };
+
+        recognition.onerror = (event) => {
+            if (listenStatusEl) {
+                listenStatusEl.remove();
+                listenStatusEl = null;
+            }
+            voiceBtn.classList.remove('listening');
+            let reason = "ভয়েস ইনপুটে সমস্যা হয়েছে।";
+            if (event.error === "not-allowed") {
+                reason = "মাইক্রোফোন অনুমতি দেওয়া হয়নি। ব্রাউজার সেটিংস থেকে Microphone Allow করুন।";
+            } else if (event.error === "no-speech") {
+                reason = "কোনো কথা শোনা যায়নি, আবার চেষ্টা করুন।";
+            } else if (event.error === "network") {
+                reason = "ভয়েস সার্ভিসের সাথে নেটওয়ার্ক সংযোগ পাওয়া যায়নি।";
+            }
+            appendMessage(`❌ ${reason}`, "error-msg", null, null, false, false);
+        };
+
+        recognition.onend = () => {
+            if (listenStatusEl) {
+                listenStatusEl.remove();
+                listenStatusEl = null;
+            }
+            voiceBtn.classList.remove('listening');
+        };
+
+        try {
+            recognition.start();
+        } catch (err) {
+            voiceBtn.classList.remove('listening');
+            appendMessage(`❌ মাইক চালু করা যাচ্ছে না: ${err.message}`, "error-msg", null, null, false, false);
+        }
+    };
+</script>
+
+</body>
+</html>
