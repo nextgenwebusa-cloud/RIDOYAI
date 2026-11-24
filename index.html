@@ -3,20 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ridoy AI - Custom Assistant</title>
+    <title>Ridoy AI - ChatGPT Style Assistant</title>
     <style>
         :root {
-            --accent-1: #00e5ff;
-            --accent-2: #ff2e93;
-            --accent-btn: linear-gradient(135deg, #0095ff, #7c4dff);
+            --accent-1: #10a37f;
+            --accent-2: #00d4ff;
+            --accent-btn: linear-gradient(135deg, #10a37f, #0b7285);
+            --bg-main: #0d0f14;
+            --bg-panel: #151821;
+            --bg-bubble-ai: #1c202c;
+            --bg-bubble-user: #10a37f;
         }
 
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body {
             margin: 0;
-            padding: 12px 10px calc(18px + env(safe-area-inset-bottom));
-            background: radial-gradient(circle at 20% 20%, #141b33 0%, #090b12 65%, #05060a 100%);
-            color: #ffffff;
+            padding: 10px 8px calc(16px + env(safe-area-inset-bottom));
+            background: radial-gradient(circle at 50% 0%, #192234 0%, #0b0d12 70%);
+            color: #f3f5f8;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -27,80 +31,28 @@
 
         .app-container {
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
             height: 100%;
-            max-height: 820px;
-            background: linear-gradient(180deg, rgba(20, 25, 42, 0.96) 0%, rgba(12, 15, 26, 0.98) 100%);
+            max-height: 840px;
+            background: var(--bg-panel);
             border-radius: 22px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.78), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.78), 0 0 0 1px rgba(255, 255, 255, 0.08);
             position: relative;
         }
 
-        /* অটোমেটিক ব্যাকগ্রাউন্ড AI গ্রিড ও অরোরা */
-        .ambient-bg {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-        .ambient-grid {
-            position: absolute;
-            inset: -40%;
-            background-image:
-                linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-            background-size: 32px 32px;
-            transform: perspective(600px) rotateX(48deg);
-            animation: gridDrift 14s linear infinite;
-        }
-        .orb-glow-1 {
-            position: absolute;
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            background: radial-gradient(circle, color-mix(in srgb, var(--accent-1) 28%, transparent), transparent 70%);
-            top: -40px;
-            left: -40px;
-            animation: orbMoveA 7s ease-in-out infinite;
-        }
-        .orb-glow-2 {
-            position: absolute;
-            width: 240px;
-            height: 240px;
-            border-radius: 50%;
-            background: radial-gradient(circle, color-mix(in srgb, var(--accent-2) 25%, transparent), transparent 70%);
-            bottom: -50px;
-            right: -40px;
-            animation: orbMoveB 8.5s ease-in-out infinite;
-        }
-
-        @keyframes gridDrift {
-            0% { transform: perspective(600px) rotateX(48deg) translateY(0); }
-            100% { transform: perspective(600px) rotateX(48deg) translateY(32px); }
-        }
-        @keyframes orbMoveA {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(35px, 28px) scale(1.15); }
-        }
-        @keyframes orbMoveB {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-32px, -25px) scale(1.12); }
-        }
-
-        /* হেডার ও লোগো */
+        /* হেডার */
         .header {
-            background: rgba(24, 30, 50, 0.92);
+            background: rgba(21, 24, 33, 0.96);
             backdrop-filter: blur(12px);
             padding: 11px 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 700;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             z-index: 10;
             gap: 8px;
@@ -115,23 +67,17 @@
             align-items: center;
             justify-content: center;
             background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-            border: 1px solid rgba(255, 255, 255, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.25);
             flex-shrink: 0;
-            box-shadow: 0 0 14px color-mix(in srgb, var(--accent-1) 35%, transparent);
-            animation: miniLogoSpin3D 5.5s ease-in-out infinite;
         }
         .logo-box img { width: 100%; height: 100%; object-fit: cover; }
-        @keyframes miniLogoSpin3D {
-            0%, 100% { transform: perspective(240px) rotateY(0deg) scale(1); }
-            50% { transform: perspective(240px) rotateY(180deg) scale(1.06); }
-        }
 
         .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #2ee59d;
-            box-shadow: 0 0 8px #2ee59d;
+            background: #22e584;
+            box-shadow: 0 0 8px #22e584;
             flex-shrink: 0;
         }
         .status-dot.offline {
@@ -143,8 +89,8 @@
             width: 34px;
             height: 34px;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            background: rgba(45, 54, 82, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.06);
             color: #fff;
             font-size: 18px;
             font-weight: bold;
@@ -155,12 +101,12 @@
             flex-shrink: 0;
         }
 
-        /* বাম ও ডান থ্রি-ডট ড্রপডাউন প্যানেল */
+        /* মেনু ব্যাকড্রপ ও ড্রপডাউন */
         .menu-backdrop {
             display: none;
             position: absolute;
             inset: 0;
-            background: rgba(0, 0, 0, 0.45);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 14;
         }
         .menu-backdrop.active { display: block; }
@@ -169,15 +115,14 @@
             display: none;
             position: absolute;
             top: 56px;
-            width: 278px;
-            max-height: 75%;
-            background: rgba(21, 27, 46, 0.98);
-            backdrop-filter: blur(16px);
-            border: 1px solid color-mix(in srgb, var(--accent-1) 28%, transparent);
+            width: 280px;
+            max-height: 76%;
+            background: #181c28;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 16px;
             padding: 12px;
             z-index: 15;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.72);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.75);
             flex-direction: column;
             gap: 9px;
             overflow-y: auto;
@@ -187,8 +132,8 @@
         .dot-dropdown.active { display: flex; }
 
         .menu-gmail-box {
-            background: rgba(12, 16, 28, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #10131c;
+            border: 1px solid rgba(255, 255, 255, 0.09);
             border-radius: 11px;
             padding: 9px 11px;
         }
@@ -205,21 +150,16 @@
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            text-align: center;
         }
 
-        .saved-chats-title { font-size: 12px; color: #b8c2dc; font-weight: 700; margin-top: 2px; }
+        .saved-chats-title { font-size: 12px; color: #aab3c8; font-weight: 700; margin-top: 2px; }
         .saved-chat-list { display: flex; flex-direction: column; gap: 6px; }
-        .saved-chat-row {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+        .saved-chat-row { display: flex; align-items: center; gap: 5px; }
         .saved-chat-item {
             flex: 1;
             min-width: 0;
-            background: rgba(34, 42, 68, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.09);
+            background: #222736;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 10px;
             padding: 7px 9px;
             cursor: pointer;
@@ -229,16 +169,16 @@
         }
         .saved-chat-item.active {
             border-color: var(--accent-1);
-            background: rgba(0, 149, 255, 0.22);
+            background: rgba(16, 163, 127, 0.18);
         }
         .saved-chat-snippet { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
-        .saved-chat-meta { font-size: 10px; color: #9aa6c7; margin-top: 2px; }
+        .saved-chat-meta { font-size: 10px; color: #8f99b3; margin-top: 2px; }
         .del-chat-btn {
             width: 30px;
             height: 36px;
             border-radius: 9px;
             border: 1px solid rgba(255, 110, 130, 0.3);
-            background: rgba(110, 25, 40, 0.75);
+            background: rgba(110, 25, 40, 0.7);
             color: #ff99a8;
             font-size: 13px;
             cursor: pointer;
@@ -249,8 +189,8 @@
             width: 100%;
             padding: 8px 10px;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            background: rgba(32, 39, 62, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #222736;
             color: #fff;
             font-size: 13px;
             font-weight: 600;
@@ -261,9 +201,9 @@
             justify-content: space-between;
         }
         .voice-option-btn.selected {
-            border-color: var(--accent-2);
-            background: linear-gradient(135deg, rgba(0, 149, 255, 0.24), rgba(255, 46, 147, 0.24));
-            color: #8cf0ff;
+            border-color: var(--accent-1);
+            background: rgba(16, 163, 127, 0.22);
+            color: #7ef9d4;
         }
 
         .speed-row { display: flex; gap: 5px; }
@@ -271,8 +211,8 @@
             flex: 1;
             padding: 6px;
             border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.14);
-            background: rgba(30, 36, 56, 0.9);
+            border: 1px solid rgba(255,255,255,0.12);
+            background: #222736;
             color: #cfd7ee;
             font-size: 12px;
             font-weight: 700;
@@ -280,7 +220,7 @@
         }
         .speed-btn.active {
             border-color: var(--accent-1);
-            background: rgba(0, 229, 255, 0.2);
+            background: rgba(16, 163, 127, 0.25);
             color: #fff;
         }
 
@@ -289,178 +229,61 @@
             flex: 1;
             padding: 7px 6px;
             border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.16);
-            background: rgba(28, 34, 52, 0.9);
+            border: 1px solid rgba(255,255,255,0.14);
+            background: #222736;
             color: #fff;
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
         }
-        .theme-chip.active { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.25); }
+        .theme-chip.active { border-color: #fff; }
 
         .menu-action-row { display: flex; gap: 6px; }
         .menu-sec-btn {
             flex: 1;
             padding: 8px;
             border-radius: 9px;
-            border: 1px solid rgba(255,255,255,0.14);
-            background: rgba(42, 50, 78, 0.85);
+            border: 1px solid rgba(255,255,255,0.12);
+            background: #262c3d;
             color: #fff;
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
         }
-        .menu-sec-btn.danger { background: rgba(122, 28, 44, 0.88); border-color: rgba(255,110,130,0.35); }
+        .menu-sec-btn.danger { background: rgba(122, 28, 44, 0.85); border-color: rgba(255,110,130,0.35); }
 
-        /* ভিউ কন্টেইনার */
+        /* স্ক্রিন */
         .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; position: relative; z-index: 2; }
-        .screen.active { display: flex; animation: screenFadeIn 0.45s ease; }
-        @keyframes screenFadeIn {
-            from { opacity: 0; transform: translateY(10px) scale(0.985); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
+        .screen.active { display: flex; }
 
-        /* প্রিমিয়াম 3D AI লোগো ও অ্যানিমেশন স্টেজ */
-        .ai-3d-stage {
-            position: relative;
-            width: 146px;
-            height: 146px;
-            margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            perspective: 750px;
-        }
-        .ai-halo {
-            position: absolute;
-            width: 126px;
-            height: 126px;
-            border-radius: 50%;
-            background: radial-gradient(circle, color-mix(in srgb, var(--accent-1) 28%, transparent), color-mix(in srgb, var(--accent-2) 16%, transparent), transparent 72%);
-            animation: haloPulse 2.8s ease-in-out infinite;
-        }
-        .ai-orbit-a {
-            position: absolute;
-            inset: 6px;
-            border-radius: 46% 54% 51% 49% / 48% 45% 55% 52%;
-            border: 2px solid transparent;
-            border-top-color: var(--accent-1);
-            border-right-color: #7c4dff;
-            animation: orbit3DA 3.8s linear infinite;
-            box-shadow: 0 0 16px color-mix(in srgb, var(--accent-1) 28%, transparent);
-        }
-        .ai-orbit-b {
-            position: absolute;
-            inset: 14px;
-            border-radius: 52% 48% 46% 54% / 54% 50% 50% 46%;
-            border: 2px solid transparent;
-            border-bottom-color: var(--accent-2);
-            border-left-color: var(--accent-1);
-            animation: orbit3DB 5.2s linear infinite;
-        }
-        .ai-3d-logo-card {
-            position: relative;
-            width: 92px;
-            height: 92px;
-            border-radius: 28px;
-            background: linear-gradient(145deg, rgba(35, 46, 82, 0.96), rgba(14, 18, 32, 0.98));
-            border: 1.5px solid color-mix(in srgb, var(--accent-1) 45%, transparent);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 3;
-            box-shadow:
-                0 12px 28px rgba(0, 0, 0, 0.65),
-                0 0 24px color-mix(in srgb, var(--accent-1) 30%, transparent),
-                inset 0 1px 1px rgba(255, 255, 255, 0.25);
-            animation: logo3DAutoMove 5.5s ease-in-out infinite;
-            transform-style: preserve-3d;
-        }
-        .ai-3d-emblem {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            background: linear-gradient(135deg, var(--accent-1), #ffffff, var(--accent-2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            transform: translateZ(16px);
-        }
-        .ai-wave-bars {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            height: 20px;
-            margin-top: 4px;
-            transform: translateZ(12px);
-        }
-        .ai-wave-bars span {
-            width: 3.5px;
-            height: 7px;
-            border-radius: 4px;
-            background: linear-gradient(180deg, var(--accent-1), var(--accent-2));
-            animation: eqBounce 1.15s ease-in-out infinite;
-        }
-        .ai-wave-bars span:nth-child(2) { animation-delay: 0.14s; }
-        .ai-wave-bars span:nth-child(3) { animation-delay: 0.28s; }
-        .ai-wave-bars span:nth-child(4) { animation-delay: 0.42s; }
-        .ai-wave-bars span:nth-child(5) { animation-delay: 0.56s; }
-
-        @keyframes logo3DAutoMove {
-            0% { transform: rotateX(12deg) rotateY(-18deg) translateY(0px); }
-            25% { transform: rotateX(-10deg) rotateY(16deg) translateY(-6px); }
-            50% { transform: rotateX(14deg) rotateY(18deg) translateY(2px); }
-            75% { transform: rotateX(-12deg) rotateY(-16deg) translateY(-5px); }
-            100% { transform: rotateX(12deg) rotateY(-18deg) translateY(0px); }
-        }
-        @keyframes orbit3DA {
-            0% { transform: rotateX(62deg) rotateZ(0deg); }
-            100% { transform: rotateX(62deg) rotateZ(360deg); }
-        }
-        @keyframes orbit3DB {
-            0% { transform: rotateY(58deg) rotateZ(360deg); }
-            100% { transform: rotateY(58deg) rotateZ(0deg); }
-        }
-        @keyframes haloPulse {
-            0%, 100% { transform: scale(0.94); opacity: 0.7; }
-            50% { transform: scale(1.12); opacity: 1; }
-        }
-        @keyframes eqBounce {
-            0%, 100% { height: 6px; opacity: 0.65; }
-            50% { height: 19px; opacity: 1; }
-        }
-
-        /* প্রিমিয়াম লগইন, সাইনআপ ও ফরগেট পাসওয়ার্ড কার্ড */
+        /* লগইন / সাইনআপ স্ক্রিন */
         .auth-box {
-            padding: 18px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 11px;
             margin: auto 14px;
             overflow-y: auto;
-            background: rgba(24, 30, 48, 0.78);
-            backdrop-filter: blur(14px);
+            background: #181c28;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
         }
-        .auth-title { text-align: center; font-size: 20px; font-weight: 700; letter-spacing: 0.3px; }
-        .auth-sub { text-align: center; font-size: 13px; color: #b4bdd6; margin-bottom: 2px; }
-        .tab-switch { display: flex; background: rgba(14, 18, 30, 0.85); border-radius: 12px; padding: 4px; gap: 4px; border: 1px solid rgba(255,255,255,0.06); }
-        .tab-btn { flex: 1; padding: 8px; border: none; border-radius: 9px; background: transparent; color: #aeb8d2; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.25s ease; }
-        .tab-btn.active { background: var(--accent-btn); color: #fff; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.35); }
+        .auth-title { text-align: center; font-size: 20px; font-weight: 700; }
+        .auth-sub { text-align: center; font-size: 13px; color: #a7b1c8; margin-bottom: 2px; }
+        .tab-switch { display: flex; background: #10131c; border-radius: 12px; padding: 4px; gap: 4px; }
+        .tab-btn { flex: 1; padding: 8px; border: none; border-radius: 9px; background: transparent; color: #a7b1c8; font-weight: 600; cursor: pointer; font-size: 13px; }
+        .tab-btn.active { background: var(--accent-btn); color: #fff; }
         .auth-input {
             width: 100%;
             padding: 12px 14px;
             border-radius: 11px;
             border: 1px solid rgba(255, 255, 255, 0.12);
-            background: rgba(15, 19, 32, 0.88);
+            background: #10131c;
             color: #fff;
             font-size: 14px;
             outline: none;
-            transition: border-color 0.25s ease, box-shadow 0.25s ease;
         }
-        .auth-input:focus { border-color: var(--accent-1); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-1) 18%, transparent); }
+        .auth-input:focus { border-color: var(--accent-1); }
         .forgot-row { display: flex; justify-content: flex-end; }
         .link-btn { background: none; border: none; color: var(--accent-1); font-size: 13px; cursor: pointer; padding: 2px 0; text-decoration: underline; }
         .primary-btn {
@@ -473,14 +296,13 @@
             font-size: 15px;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 6px 18px rgba(0, 149, 255, 0.32);
         }
         .google-btn {
             width: 100%;
             padding: 11px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.16);
             border-radius: 11px;
-            background: rgba(255, 255, 255, 0.96);
+            background: #ffffff;
             color: #131722;
             font-size: 14px;
             font-weight: 700;
@@ -493,53 +315,48 @@
         .auth-msg { font-size: 13px; text-align: center; min-height: 18px; color: #ff8a80; }
         .auth-msg.success { color: #69f0ae; }
 
-        /* চ্যাট উইন্ডো, টাইমস্ট্যাম্প, কপি ও স্পিকার বাটন */
-        #chat-window { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message { max-width: 84%; padding: 10px 13px; border-radius: 12px; font-size: 15px; line-height: 1.42; word-wrap: break-word; }
-        .user { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 2px; }
-        .ai { align-self: flex-start; background: rgba(44, 52, 74, 0.92); color: #eef2fc; border-bottom-left-radius: 2px; border: 1px solid rgba(255,255,255,0.06); }
-        .error-msg { align-self: flex-start; background: #4a1c1c; color: #ff8a80; border: 1px solid #ff5252; border-bottom-left-radius: 2px; font-size: 13px; }
-        .status-msg { align-self: flex-start; background: rgba(37, 42, 58, 0.9); color: #c5cde0; font-size: 13px; font-style: italic; border-bottom-left-radius: 2px; }
-        .chat-img { max-width: 100%; border-radius: 8px; margin-top: 6px; display: block; }
+        /* চ্যাট উইন্ডো */
+        #chat-window { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .message { max-width: 85%; padding: 11px 14px; border-radius: 14px; font-size: 15px; line-height: 1.48; word-wrap: break-word; white-space: pre-wrap; }
+        .user { align-self: flex-end; background: var(--bg-bubble-user); color: #ffffff; border-bottom-right-radius: 4px; }
+        .ai { align-self: flex-start; background: var(--bg-bubble-ai); color: #f0f3f9; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.07); }
+        .error-msg { align-self: flex-start; background: #3b171c; color: #ff8a80; border: 1px solid #ff5252; font-size: 13px; }
+        .status-msg { align-self: flex-start; background: #1b202e; color: #b7c2da; font-size: 13px; font-style: italic; }
+
+        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 8px; display: block; border: 1px solid rgba(255,255,255,0.12); }
         .file-card {
-            margin-top: 6px;
+            margin-top: 8px;
             padding: 8px 10px;
             border-radius: 9px;
-            background: rgba(12, 16, 28, 0.55);
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(10, 13, 20, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.14);
             font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
         }
-        .dl-link { display: inline-block; margin-top: 8px; padding: 6px 12px; background: #28a745; color: #fff; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: bold; }
+        .dl-link {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: #10a37f;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+        }
 
-        .msg-meta {
-            margin-top: 6px;
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.65);
-        }
-        .msg-footer {
-            margin-top: 7px;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
+        .msg-meta { margin-top: 6px; font-size: 10px; color: rgba(255, 255, 255, 0.6); }
+        .msg-footer { margin-top: 7px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
         .speaker-btn, .copy-btn {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             color: #8ceeff;
-            border: 1px solid rgba(140, 238, 255, 0.25);
+            border: 1px solid rgba(140, 238, 255, 0.22);
             border-radius: 8px;
             padding: 4px 8px;
             font-size: 11px;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
         }
         .copy-btn.copied {
-            background: rgba(40, 167, 69, 0.3);
+            background: rgba(16, 163, 127, 0.3);
             color: #98ffbe;
             border-color: rgba(152, 255, 190, 0.45);
         }
@@ -549,22 +366,22 @@
             border-color: rgba(255, 46, 147, 0.55);
         }
 
-        /* সরাসরি লাইভ ভয়েস কথোপকথন ব্যানার */
+        /* লাইভ ভয়েস ব্যানার */
         .live-voice-bar {
             display: none;
             align-items: center;
             justify-content: space-between;
             gap: 8px;
             padding: 8px 12px;
-            background: linear-gradient(90deg, rgba(233, 30, 99, 0.24), rgba(0, 229, 255, 0.2));
-            border-top: 1px solid rgba(255, 77, 166, 0.4);
+            background: rgba(16, 163, 127, 0.22);
+            border-top: 1px solid rgba(16, 163, 127, 0.45);
             font-size: 12px;
             color: #fff;
             z-index: 8;
         }
         .live-voice-bar.active { display: flex; }
         .live-stop-btn {
-            background: #ff2e55;
+            background: #e53935;
             color: #fff;
             border: none;
             border-radius: 8px;
@@ -575,14 +392,14 @@
             flex-shrink: 0;
         }
 
-        /* কুইক প্রম্পট শর্টকাট বার */
+        /* কুইক প্রম্পট বার */
         .quick-prompts {
             display: flex;
             gap: 6px;
             padding: 6px 10px;
             overflow-x: auto;
-            background: rgba(20, 25, 40, 0.85);
-            border-top: 1px solid rgba(255,255,255,0.05);
+            background: #151821;
+            border-top: 1px solid rgba(255,255,255,0.06);
             scrollbar-width: none;
         }
         .quick-prompts::-webkit-scrollbar { display: none; }
@@ -590,39 +407,38 @@
             white-space: nowrap;
             padding: 5px 10px;
             border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.14);
-            background: rgba(36, 44, 70, 0.9);
-            color: #dce4fa;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: #202534;
+            color: #e4eaf7;
             font-size: 11px;
             font-weight: 600;
             cursor: pointer;
             flex-shrink: 0;
         }
 
-        /* বাম প্লাস (+) অ্যাটাচমেন্ট পপ-আপ মেনু */
+        /* বাম প্লাস (+) মেনু */
         .plus-attach-sheet {
             display: none;
             position: absolute;
             left: 12px;
             bottom: 84px;
-            width: 245px;
-            background: rgba(20, 26, 44, 0.98);
-            backdrop-filter: blur(16px);
-            border: 1px solid color-mix(in srgb, var(--accent-1) 35%, transparent);
+            width: 260px;
+            background: #181c28;
+            border: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 16px;
             padding: 10px;
             z-index: 16;
             flex-direction: column;
             gap: 7px;
-            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.72);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75);
         }
         .plus-attach-sheet.active { display: flex; }
         .attach-opt-btn {
             width: 100%;
             padding: 10px 12px;
             border-radius: 11px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background: rgba(34, 42, 68, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #222736;
             color: #fff;
             font-size: 13px;
             font-weight: 600;
@@ -633,12 +449,12 @@
             gap: 8px;
         }
 
-        /* AI ইমেজ প্রম্পট মোডাল */
+        /* ছবি এডিট মোডাল */
         #aiImageModal {
             display: none;
             position: absolute;
             inset: 0;
-            background: rgba(14, 17, 27, 0.97);
+            background: #12151e;
             z-index: 20;
             flex-direction: column;
             padding: 15px;
@@ -646,38 +462,49 @@
             overflow-y: auto;
         }
         #aiImageModal.active { display: flex; }
-        .modal-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 8px; }
-        .preview-box { background: #10131d; border-radius: 10px; padding: 10px; display: flex; justify-content: center; align-items: center; min-height: 155px; max-height: 205px; overflow: hidden; }
+        .modal-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a3042; padding-bottom: 8px; }
+        .preview-box { background: #0c0e14; border-radius: 10px; padding: 10px; display: flex; justify-content: center; align-items: center; min-height: 155px; max-height: 205px; overflow: hidden; }
         .preview-box img { max-width: 100%; max-height: 185px; border-radius: 8px; }
         .img-transform-row { display: flex; gap: 8px; }
-        .img-tool-btn { flex: 1; padding: 8px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.16); background: #262e45; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }
-        #imgEditPrompt { width: 100%; padding: 11px; border-radius: 10px; border: 1px solid #444; background: #222736; color: #fff; font-size: 14px; outline: none; min-height: 68px; resize: vertical; }
+        .img-tool-btn { flex: 1; padding: 8px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.14); background: #222736; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }
+        #imgEditPrompt { width: 100%; padding: 11px; border-radius: 10px; border: 1px solid #353c52; background: #1b202e; color: #fff; font-size: 14px; outline: none; min-height: 68px; resize: vertical; }
         .modal-actions { display: flex; gap: 8px; margin-top: auto; }
         .action-btn { flex: 1; padding: 11px; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; color: #fff; }
-        .btn-cancel { background: #444; }
-        .btn-generate { background: #28a745; }
+        .btn-cancel { background: #373e52; }
+        .btn-generate { background: #10a37f; }
 
         /* ইনপুট এরিয়া */
         .input-area {
             display: flex;
             padding: 9px 12px 13px;
             margin-bottom: 14px;
-            background: rgba(26, 31, 48, 0.95);
+            background: #181c28;
             gap: 7px;
             align-items: center;
             border-top: 1px solid rgba(255,255,255,0.08);
             border-radius: 0 0 20px 20px;
         }
-        #userInput { flex: 1; padding: 11px 14px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); background: #333a50; color: white; outline: none; font-size: 15px; min-width: 0; }
+        #userInput {
+            flex: 1;
+            padding: 11px 14px;
+            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: #23293a;
+            color: white;
+            outline: none;
+            font-size: 15px;
+            min-width: 0;
+        }
+        #userInput:focus { border-color: var(--accent-1); }
         .btn { width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .plus-btn { background: #28a745; color: white; font-weight: 700; }
-        .send-btn { background: #007bff; color: white; font-size: 16px; }
-        .voice-btn { background: #e91e63; color: white; font-size: 16px; }
-        .voice-btn.listening { animation: pulse 1s infinite; background: #ff0000; }
+        .plus-btn { background: #242a3b; color: #fff; border: 1px solid rgba(255,255,255,0.14); font-weight: 700; }
+        .send-btn { background: var(--accent-btn); color: white; font-size: 16px; }
+        .voice-btn { background: #2d3448; color: white; border: 1px solid rgba(255,255,255,0.14); font-size: 16px; }
+        .voice-btn.listening { animation: pulse 1s infinite; background: #e53935; border-color: #ff8a80; }
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.08); }
             100% { transform: scale(1); }
         }
     </style>
@@ -685,17 +512,9 @@
 <body>
 
 <div class="app-container">
-    <!-- অটোমেটিক ব্যাকগ্রাউন্ড AI অ্যানিমেশন -->
-    <div class="ambient-bg">
-        <div class="orb-glow-1"></div>
-        <div class="orb-glow-2"></div>
-        <div class="ambient-grid"></div>
-    </div>
-
-    <!-- মেনু ব্যাকড্রপ -->
     <div class="menu-backdrop" id="menuBackdrop" onclick="closeAllOverlays()"></div>
 
-    <!-- বাম থ্রি-ডট মেনু (জিমেইল, নিউ চ্যাট ও অটোমেটিক সেভ হওয়া মেসেজ লিস্ট + ডিলিট) -->
+    <!-- বাম থ্রি-ডট মেনু -->
     <div class="dot-dropdown left-menu" id="leftDotMenu">
         <div class="menu-gmail-box">
             <div class="menu-gmail-label">লগইন জিমেইল</div>
@@ -704,20 +523,20 @@
 
         <button type="button" class="new-chat-btn" onclick="startNewChatSession()">➕ নিউ চ্যাট</button>
 
-        <div class="saved-chats-title">💾 অটোমেটিক সেভ হওয়া চ্যাট</div>
+        <div class="saved-chats-title">💾 সেভ হওয়া চ্যাট</div>
         <div class="saved-chat-list" id="savedChatList">
             <div class="saved-chat-meta">এখনও কোনো চ্যাট সেভ হয়নি।</div>
         </div>
     </div>
 
-    <!-- ডান থ্রি-ডট মেনু (জিমেইল, ভয়েস চেঞ্জার, স্পিড, থিম কালার ও লগআউট) -->
+    <!-- ডান থ্রি-ডট মেনু -->
     <div class="dot-dropdown right-menu" id="rightDotMenu">
         <div class="menu-gmail-box">
             <div class="menu-gmail-label">অ্যাকাউন্ট জিমেইল</div>
             <div class="menu-gmail-value" id="rightMenuGmail">লগইন করা নেই</div>
         </div>
 
-        <div class="saved-chats-title">🎙️ ভয়েস চেঞ্জ করুন</div>
+        <div class="saved-chats-title">🎙️ ভয়েস নির্বাচন</div>
         <button type="button" class="voice-option-btn selected" id="voiceOptFemale" onclick="selectVoiceProfile('female')">
             <span>👩 মেয়ে মানুষের ভয়েস</span>
             <span id="checkFemale">✓</span>
@@ -727,7 +546,7 @@
             <span id="checkMale"></span>
         </button>
         <button type="button" class="voice-option-btn" id="voiceOptNatural" onclick="selectVoiceProfile('natural')">
-            <span>🤖 ন্যাচারাল / ডিফল্ট ভয়েস</span>
+            <span>🤖 ন্যাচারাল ভয়েস</span>
             <span id="checkNatural"></span>
         </button>
 
@@ -735,14 +554,14 @@
         <div class="speed-row">
             <button type="button" class="speed-btn" id="speed08" onclick="selectVoiceSpeed(0.8)">0.8x</button>
             <button type="button" class="speed-btn active" id="speed10" onclick="selectVoiceSpeed(1.0)">1.0x</button>
-            <button type="button" class="speed-btn" id="speed12" onclick="selectVoiceSpeed(1.2)">1.2x</button>
+            <button type="button" class="speed-btn" id="speed12" onclick="selectVoiceSpeed(1.15)">1.15x</button>
         </div>
 
-        <div class="saved-chats-title">🎨 থিম কালার</div>
+        <div class="saved-chats-title">🎨 থিম</div>
         <div class="theme-row">
-            <button type="button" class="theme-chip active" id="themeCyber" onclick="selectThemeColor('cyber')">Cyan-Pink</button>
-            <button type="button" class="theme-chip" id="themeEmerald" onclick="selectThemeColor('emerald')">Emerald</button>
-            <button type="button" class="theme-chip" id="themeRoyal" onclick="selectThemeColor('royal')">Gold-Violet</button>
+            <button type="button" class="theme-chip active" id="themeEmerald" onclick="selectThemeColor('emerald')">Emerald</button>
+            <button type="button" class="theme-chip" id="themeCyber" onclick="selectThemeColor('cyber')">Cyan</button>
+            <button type="button" class="theme-chip" id="themeRoyal" onclick="selectThemeColor('royal')">Violet</button>
         </div>
 
         <div class="menu-action-row" style="margin-top:4px;">
@@ -750,12 +569,12 @@
         </div>
     </div>
 
-    <!-- হেডার ও লোগো -->
+    <!-- হেডার -->
     <div class="header">
         <div class="header-left">
             <button type="button" class="dots-btn" id="leftDotsBtn" style="display:none;" onclick="toggleDotMenu('left')" title="চ্যাট ও জিমেইল মেনু">⋮</button>
-            <div class="logo-box" id="headerLogoBox">
-                <img id="headerLogoImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%2300e5ff'/><stop offset='100%25' stop-color='%23ff2e93'/></linearGradient></defs><circle cx='50' cy='50' r='48' fill='%23181818' stroke='url(%23g)' stroke-width='4'/><text x='50' y='63' font-size='42' font-family='Arial, sans-serif' font-weight='bold' fill='white' text-anchor='middle'>R</text></svg>" alt="Ridoy AI Logo">
+            <div class="logo-box">
+                <img id="headerLogoImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%2310a37f'/><text x='50' y='64' font-size='44' font-family='Arial, sans-serif' font-weight='bold' fill='white' text-anchor='middle'>R</text></svg>" alt="Ridoy AI Logo">
             </div>
             <span id="headerTitle">Ridoy AI</span>
             <span class="status-dot" id="netStatusDot" title="অনলাইন"></span>
@@ -763,23 +582,11 @@
         <button type="button" class="dots-btn" id="rightDotsBtn" style="display:none;" onclick="toggleDotMenu('right')" title="ভয়েস ও সেটিংস মেনু">⋮</button>
     </div>
 
-    <!-- ১. প্রিমিয়াম 3D অ্যানিমেটেড লগইন, সাইনআপ ও ফরগেট পাসওয়ার্ড স্ক্রিন -->
+    <!-- ১. লগইন / সাইনআপ / ফরগেট পাসওয়ার্ড -->
     <div id="authScreen" class="screen active">
         <div class="auth-box">
-            <div class="ai-3d-stage">
-                <div class="ai-halo"></div>
-                <div class="ai-orbit-a"></div>
-                <div class="ai-orbit-b"></div>
-                <div class="ai-3d-logo-card">
-                    <div class="ai-3d-emblem">AI</div>
-                    <div class="ai-wave-bars">
-                        <span></span><span></span><span></span><span></span><span></span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="auth-title" id="authHeading">লগইন করুন</div>
-            <div class="auth-sub" id="authSub">লগইন করে সরাসরি Ridoy AI চ্যাটে প্রবেশ করুন</div>
+            <div class="auth-title" id="authHeading">Ridoy AI-তে লগইন করুন</div>
+            <div class="auth-sub" id="authSub">লগইন করলেই সরাসরি চ্যাট, লেখা দিয়ে ছবি বানানো ও লাইভ ভয়েস চালু হবে</div>
 
             <div class="tab-switch" id="authTabs">
                 <button class="tab-btn active" id="loginTabBtn" onclick="switchAuthMode('login')">লগইন</button>
@@ -809,21 +616,25 @@
         </div>
     </div>
 
-    <!-- ২. সরাসরি এআই চ্যাট স্ক্রিন -->
+    <!-- ২. চ্যাট স্ক্রিন -->
     <div id="chatScreen" class="screen">
         <div id="chat-window"></div>
 
-        <!-- সরাসরি লাইভ ভয়েস কথোপকথন বার -->
+        <!-- লাইভ ভয়েস কথোপকথন বার -->
         <div class="live-voice-bar" id="liveVoiceBar">
             <span id="liveVoiceStatusText">🎙️ লাইভ কথা চলছে — প্রশ্ন বলুন...</span>
             <button type="button" class="live-stop-btn" onclick="stopLiveVoiceConversation()">⏹ বন্ধ করুন</button>
         </div>
 
-        <!-- বাম প্লাস (+) অ্যাটাচমেন্ট মেনু (গ্যালারি / ফটো / ফাইল ও ডকুমেন্টস) -->
+        <!-- বাম প্লাস (+) অ্যাটাচমেন্ট মেনু -->
         <div class="plus-attach-sheet" id="plusAttachSheet">
+            <button type="button" class="attach-opt-btn" onclick="openTextToImagePrompt()">
+                <span>🎨</span>
+                <span>লেখা দিয়ে ছবি বানান</span>
+            </button>
             <button type="button" class="attach-opt-btn" onclick="chooseGalleryEdit()">
                 <span>🖼️</span>
-                <span>গ্যালারি (AI এডিট)</span>
+                <span>গ্যালারি (ছবি এডিট)</span>
             </button>
             <button type="button" class="attach-opt-btn" onclick="chooseDirectPhoto()">
                 <span>📷</span>
@@ -835,10 +646,10 @@
             </button>
         </div>
 
-        <!-- ছবি দিয়ে AI এডিট করার মোডাল -->
+        <!-- ছবি এডিট মোডাল -->
         <div id="aiImageModal">
             <div class="modal-top">
-                <strong>✨ AI দিয়ে ছবি এডিট করুন</strong>
+                <strong>✨ ছবি এডিট করুন</strong>
                 <button class="btn-cancel" style="padding:5px 10px; border-radius:8px; border:none; color:#fff; cursor:pointer;" onclick="closeAiImageModal()">✕</button>
             </div>
 
@@ -855,34 +666,33 @@
 
             <div class="modal-actions">
                 <button class="action-btn btn-cancel" onclick="closeAiImageModal()">বাতিল</button>
-                <button class="action-btn btn-generate" onclick="processAiImageEdit()">অটোমেটিক এডিট করুন</button>
+                <button class="action-btn btn-generate" onclick="processAiImageEdit()">এডিট করুন</button>
             </div>
         </div>
 
-        <!-- কুইক প্রম্পট শর্টকাট -->
+        <!-- কুইক প্রম্পট -->
         <div class="quick-prompts">
+            <button type="button" class="qp-chip" onclick="openTextToImagePrompt()">🎨 ছবি বানান</button>
             <button type="button" class="qp-chip" onclick="useQuickPrompt('সংক্ষেপে বুঝিয়ে বলো: ')">✨ সংক্ষেপে বলো</button>
             <button type="button" class="qp-chip" onclick="useQuickPrompt('ইংরেজিতে অনুবাদ করো: ')">🌐 অনুবাদ করো</button>
             <button type="button" class="qp-chip" onclick="useQuickPrompt('এর জন্য কোড লিখে দাও: ')">💻 কোড দাও</button>
-            <button type="button" class="qp-chip" onclick="useQuickPrompt('ভালো কিছু আইডিয়া দাও: ')">💡 আইডিয়া দাও</button>
         </div>
 
-        <!-- ফাইল পিকার ইনপুটসমূহ -->
+        <!-- ফাইল ইনপুটসমূহ -->
         <input type="file" id="imageEditInput" accept="image/*" style="display:none" onchange="handleImageEditFileSelect(event)">
         <input type="file" id="directPhotoInput" accept="image/*" style="display:none" onchange="handleDirectPhotoSelect(event)">
         <input type="file" id="docFileInput" accept=".pdf,.doc,.docx,.txt,.csv,.json,.md,.html,.js,.css,.xml,.xls,.xlsx,.ppt,.pptx,application/*" style="display:none" onchange="handleDocumentFileSelect(event)">
 
-        <!-- মেসেজ, প্লাস (+) ও সরাসরি লাইভ ভয়েস ইনপুট -->
+        <!-- মেসেজ, প্লাস (+), লাইভ ভয়েস ও সেন্ড -->
         <div class="input-area">
-            <button class="btn plus-btn" id="plusBtn" onclick="togglePlusMenu()" title="গ্যালারি, ফটো ও ফাইল">+</button>
-            <input type="text" id="userInput" placeholder="কিছু লিখুন..." onkeypress="if(event.key==='Enter') handleSend()">
+            <button class="btn plus-btn" id="plusBtn" onclick="togglePlusMenu()" title="ছবি বানানো, গ্যালারি, ফটো ও ফাইল">+</button>
+            <input type="text" id="userInput" placeholder="কিছু লিখুন বা ছবি বানানোর কথা বলুন..." onkeypress="if(event.key==='Enter') handleSend()">
             <button class="btn voice-btn" id="voiceBtn" onclick="toggleLiveVoiceConversation()" title="সরাসরি ভয়েসে কথা বলুন">🎤</button>
             <button class="btn send-btn" onclick="handleSend()" title="পাঠান">➤</button>
         </div>
     </div>
 </div>
 
-<!-- Firebase এবং Groq AI লজিক -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -934,13 +744,13 @@
     let activeSpeakerBtn = null;
     let selectedVoiceType = localStorage.getItem("ridoy_ai_voice_type") || "female";
     let selectedVoiceSpeed = parseFloat(localStorage.getItem("ridoy_ai_voice_speed") || "1.0");
-    let selectedTheme = localStorage.getItem("ridoy_ai_theme") || "cyber";
+    let selectedTheme = localStorage.getItem("ridoy_ai_theme") || "emerald";
     let currentSessionId = localStorage.getItem("ridoy_ai_current_session") || ("sess_" + Date.now());
     let chatSessions = [];
 
-    // সরাসরি লাইভ ভয়েস কথোপকথন স্টেট
     let liveConversationActive = false;
     let liveRecognition = null;
+    let speechCancelledManually = false;
 
     function updateNetworkDot() {
         const dot = document.getElementById("netStatusDot");
@@ -961,22 +771,25 @@
         localStorage.setItem("ridoy_ai_theme", themeName);
         const root = document.documentElement;
 
-        if (themeName === "emerald") {
-            root.style.setProperty("--accent-1", "#00f5a0");
-            root.style.setProperty("--accent-2", "#00b4d8");
-            root.style.setProperty("--accent-btn", "linear-gradient(135deg, #00b09b, #0077b6)");
+        if (themeName === "cyber") {
+            root.style.setProperty("--accent-1", "#00d4ff");
+            root.style.setProperty("--accent-2", "#3b82f6");
+            root.style.setProperty("--accent-btn", "linear-gradient(135deg, #0095ff, #00d4ff)");
+            root.style.setProperty("--bg-bubble-user", "#0284c7");
         } else if (themeName === "royal") {
-            root.style.setProperty("--accent-1", "#ffd166");
-            root.style.setProperty("--accent-2", "#b5179e");
-            root.style.setProperty("--accent-btn", "linear-gradient(135deg, #9d4edd, #f77f00)");
+            root.style.setProperty("--accent-1", "#a855f7");
+            root.style.setProperty("--accent-2", "#ec4899");
+            root.style.setProperty("--accent-btn", "linear-gradient(135deg, #8b5cf6, #ec4899)");
+            root.style.setProperty("--bg-bubble-user", "#7c3aed");
         } else {
-            root.style.setProperty("--accent-1", "#00e5ff");
-            root.style.setProperty("--accent-2", "#ff2e93");
-            root.style.setProperty("--accent-btn", "linear-gradient(135deg, #0095ff, #7c4dff)");
+            root.style.setProperty("--accent-1", "#10a37f");
+            root.style.setProperty("--accent-2", "#00d4ff");
+            root.style.setProperty("--accent-btn", "linear-gradient(135deg, #10a37f, #0b7285)");
+            root.style.setProperty("--bg-bubble-user", "#10a37f");
         }
 
-        document.getElementById("themeCyber").classList.toggle("active", themeName === "cyber");
         document.getElementById("themeEmerald").classList.toggle("active", themeName === "emerald");
+        document.getElementById("themeCyber").classList.toggle("active", themeName === "cyber");
         document.getElementById("themeRoyal").classList.toggle("active", themeName === "royal");
     }
     window.selectThemeColor = selectThemeColor;
@@ -987,7 +800,7 @@
         localStorage.setItem("ridoy_ai_voice_speed", String(spd));
         document.getElementById("speed08").classList.toggle("active", spd === 0.8);
         document.getElementById("speed10").classList.toggle("active", spd === 1.0);
-        document.getElementById("speed12").classList.toggle("active", spd === 1.2);
+        document.getElementById("speed12").classList.toggle("active", spd === 1.15);
     }
     window.selectVoiceSpeed = selectVoiceSpeed;
     selectVoiceSpeed(selectedVoiceSpeed);
@@ -1119,7 +932,7 @@
         const win = document.getElementById("chat-window");
         win.innerHTML = "";
         appendMessage(
-            "আসসালামু আলাইকুম! আমি Ridoy AI। বলুন কীভাবে সাহায্য করতে পারি?",
+            "হ্যালো! আমি Ridoy AI। আপনি লিখতে পারেন, লেখা দিয়ে ছবি বানাতে বলতে পারেন, অথবা লাইভ ভয়েসে সরাসরি কথা বলতে পারেন।",
             "ai",
             null,
             null,
@@ -1146,10 +959,7 @@
 
     window.startNewChatSession = () => {
         stopLiveVoiceConversation();
-        if (window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-            resetAllSpeakerButtons();
-        }
+        stopSpeechNow();
         currentSessionId = "sess_" + Date.now();
         saveLocalSessions();
         renderWelcomeInChatWindow();
@@ -1161,6 +971,13 @@
         if (!input.value.startsWith(prefix)) {
             input.value = prefix + input.value;
         }
+        input.focus();
+    };
+
+    window.openTextToImagePrompt = () => {
+        closeAllOverlays();
+        const input = document.getElementById("userInput");
+        input.value = "একটি ছবি বানিয়ে দাও: ";
         input.focus();
     };
 
@@ -1220,16 +1037,17 @@
         document.getElementById("menuBackdrop").classList.remove("active");
     };
 
+    // ক্লিয়ার ভয়েস ইঞ্জিন (বাক্য/অংশে ভেঙে স্মুথ ও পরিষ্কারভাবে পড়া)
     function pickBestVoice(type) {
         if (!('speechSynthesis' in window)) return null;
         const voices = window.speechSynthesis.getVoices() || [];
         if (!voices.length) return null;
 
-        const bnVoices = voices.filter(v => /bn|bengali|bangla/i.test(v.lang) || /bangla|bengali/i.test(v.name));
+        const bnVoices = voices.filter(v => /bn|bengali|bangla|hi|hindi/i.test(v.lang) || /bangla|bengali/i.test(v.name));
         const pool = bnVoices.length > 0 ? bnVoices : voices;
 
-        const femaleHints = /female|woman|girl|priya|tanisha|samantha|victoria|zira|google हिन्दी|google বাংলা|nita|lekha/i;
-        const maleHints = /male|man|boy|rishi|prabhat|alex|daniel|david|google uk english male/i;
+        const femaleHints = /female|woman|girl|priya|tanisha|samantha|victoria|zira|nita|lekha|google/i;
+        const maleHints = /male|man|boy|rishi|prabhat|alex|daniel|david/i;
 
         if (type === "female") {
             return pool.find(v => femaleHints.test(v.name)) || pool[0];
@@ -1254,29 +1072,53 @@
         activeSpeakerBtn = null;
     }
 
-    function speakTextWithSelectedVoice(textToSpeak, onCompleteCallback = null, btnEl = null) {
+    function stopSpeechNow() {
+        speechCancelledManually = true;
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+        resetAllSpeakerButtons();
+    }
+
+    function splitIntoClearChunks(text) {
+        const cleaned = String(text || "")
+            .replace(/[*#_`~]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+        if (!cleaned) return [];
+
+        const parts = cleaned.match(/[^।.!?;\n]+[।.!?;\n]?/g) || [cleaned];
+        const chunks = [];
+        let buf = "";
+
+        for (const p of parts) {
+            const part = p.trim();
+            if (!part) continue;
+            if ((buf + " " + part).length > 180 && buf) {
+                chunks.push(buf.trim());
+                buf = part;
+            } else {
+                buf = buf ? (buf + " " + part) : part;
+            }
+        }
+        if (buf.trim()) chunks.push(buf.trim());
+        return chunks;
+    }
+
+    function speakTextClear(textToSpeak, onCompleteCallback = null, btnEl = null) {
         if (!('speechSynthesis' in window) || !textToSpeak) {
             if (onCompleteCallback) onCompleteCallback();
             return;
         }
 
+        speechCancelledManually = false;
         window.speechSynthesis.cancel();
         resetAllSpeakerButtons();
 
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        const chosenVoice = pickBestVoice(selectedVoiceType);
-        if (chosenVoice) {
-            utterance.voice = chosenVoice;
-        }
-        utterance.lang = chosenVoice?.lang || 'bn-BD';
-        utterance.rate = selectedVoiceSpeed;
-
-        if (selectedVoiceType === "female") {
-            utterance.pitch = 1.24;
-        } else if (selectedVoiceType === "male") {
-            utterance.pitch = 0.78;
-        } else {
-            utterance.pitch = 1.0;
+        const chunks = splitIntoClearChunks(textToSpeak);
+        if (!chunks.length) {
+            if (onCompleteCallback) onCompleteCallback();
+            return;
         }
 
         if (btnEl) {
@@ -1285,16 +1127,50 @@
             btnEl.innerHTML = "⏹ থামুন";
         }
 
-        utterance.onend = () => {
-            resetAllSpeakerButtons();
-            if (onCompleteCallback) onCompleteCallback();
-        };
-        utterance.onerror = () => {
-            resetAllSpeakerButtons();
-            if (onCompleteCallback) onCompleteCallback();
+        const chosenVoice = pickBestVoice(selectedVoiceType);
+        let idx = 0;
+
+        const playNextChunk = () => {
+            if (speechCancelledManually || idx >= chunks.length) {
+                resetAllSpeakerButtons();
+                if (!speechCancelledManually && onCompleteCallback) {
+                    onCompleteCallback();
+                }
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(chunks[idx]);
+            idx++;
+
+            if (chosenVoice) {
+                utterance.voice = chosenVoice;
+            }
+            utterance.lang = chosenVoice?.lang || 'bn-BD';
+            utterance.rate = selectedVoiceSpeed;
+
+            if (selectedVoiceType === "female") {
+                utterance.pitch = 1.16;
+            } else if (selectedVoiceType === "male") {
+                utterance.pitch = 0.84;
+            } else {
+                utterance.pitch = 1.0;
+            }
+
+            utterance.onend = () => {
+                setTimeout(playNextChunk, 80);
+            };
+            utterance.onerror = () => {
+                setTimeout(playNextChunk, 120);
+            };
+
+            try {
+                window.speechSynthesis.speak(utterance);
+            } catch (_) {
+                playNextChunk();
+            }
         };
 
-        window.speechSynthesis.speak(utterance);
+        playNextChunk();
     }
 
     window.toggleSpeakMessage = (btnEl, textToSpeak) => {
@@ -1303,15 +1179,14 @@
             return;
         }
 
-        const isSameSpeaking = activeSpeakerBtn === btnEl && window.speechSynthesis.speaking;
-        window.speechSynthesis.cancel();
-        resetAllSpeakerButtons();
+        const isSameSpeaking = activeSpeakerBtn === btnEl;
+        stopSpeechNow();
 
         if (isSameSpeaking || !textToSpeak) {
             return;
         }
 
-        speakTextWithSelectedVoice(textToSpeak, null, btnEl);
+        speakTextClear(textToSpeak, null, btnEl);
     };
 
     window.copyMessageText = async (btnEl, text) => {
@@ -1367,8 +1242,8 @@
             document.getElementById("authSub").innerText = "আপনার রেজিস্টার্ড ইমেইলে রিসেট লিংক পাঠানো হবে";
             document.getElementById("authSubmitBtn").innerText = "রিসেট লিংক পাঠান";
         } else {
-            document.getElementById("authHeading").innerText = "লগইন করুন";
-            document.getElementById("authSub").innerText = "লগইন করে সরাসরি Ridoy AI চ্যাটে প্রবেশ করুন";
+            document.getElementById("authHeading").innerText = "Ridoy AI-তে লগইন করুন";
+            document.getElementById("authSub").innerText = "লগইন করলেই সরাসরি চ্যাট, লেখা দিয়ে ছবি বানানো ও লাইভ ভয়েস চালু হবে";
             document.getElementById("authSubmitBtn").innerText = "লগইন করুন";
         }
 
@@ -1381,7 +1256,6 @@
         const chatScreen = document.getElementById("chatScreen");
         const leftDotsBtn = document.getElementById("leftDotsBtn");
         const rightDotsBtn = document.getElementById("rightDotsBtn");
-        const headerTitle = document.getElementById("headerTitle");
 
         authScreen.classList.remove("active");
         chatScreen.classList.remove("active");
@@ -1390,14 +1264,12 @@
             authScreen.classList.add("active");
             leftDotsBtn.style.display = "none";
             rightDotsBtn.style.display = "none";
-            headerTitle.innerText = "Ridoy AI";
             return;
         }
 
         leftDotsBtn.style.display = "flex";
         rightDotsBtn.style.display = "flex";
         chatScreen.classList.add("active");
-        headerTitle.innerText = "Ridoy AI";
         loadChatSession(currentSessionId);
     };
 
@@ -1415,7 +1287,7 @@
         try {
             if (authMode === "forgot") {
                 await sendPasswordResetEmail(auth, email);
-                setAuthStatus("পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে। ইনবক্স বা স্প্যাম চেক করুন।", true);
+                setAuthStatus("পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে।", true);
                 return;
             }
 
@@ -1448,6 +1320,7 @@
 
     window.handleLogout = async () => {
         stopLiveVoiceConversation();
+        stopSpeechNow();
         try {
             await signOut(auth);
         } catch (_) {}
@@ -1558,6 +1431,111 @@
         return mentionsRidoySir && asksLocation;
     }
 
+    // লেখা থেকে ছবি বানানোর কমান্ড সনাক্তকরণ ও জেনারেশন
+    function extractImagePrompt(text) {
+        const clean = text.trim();
+        const patterns = [
+            /^(?:একটি\s+)?ছবি\s+(?:বানিয়ে|বানিয়ে|তৈরি করে|এঁকে)\s*(?:দাও|দে|দেন)?\s*[:\-]?\s*(.+)$/i,
+            /^(?:একটি\s+)?পিক\s+(?:বানিয়ে|বানিয়ে|তৈরি করে|এঁকে)\s*(?:দাও|দে|দেন)?\s*[:\-]?\s*(.+)$/i,
+            /^(?:draw|generate|create)\s+(?:an?\s+)?(?:image|picture|photo)\s+(?:of\s+)?(.+)$/i
+        ];
+
+        for (const pat of patterns) {
+            const m = clean.match(pat);
+            if (m && m[1] && m[1].trim().length > 1) {
+                return m[1].trim();
+            }
+        }
+        return null;
+    }
+
+    function generateArtworkFromPrompt(promptText) {
+        const canvas = document.createElement("canvas");
+        canvas.width = 768;
+        canvas.height = 512;
+        const ctx = canvas.getContext("2d");
+
+        let hash = 2166136261;
+        for (let i = 0; i < promptText.length; i++) {
+            hash ^= promptText.charCodeAt(i);
+            hash = Math.imul(hash, 16777619);
+        }
+        const rand = () => {
+            hash ^= hash << 13;
+            hash ^= hash >>> 17;
+            hash ^= hash << 5;
+            return ((hash >>> 0) % 10000) / 10000;
+        };
+
+        const palettes = [
+            ["#0f172a", "#1e1b4b", "#38bdf8", "#f472b6"],
+            ["#06281e", "#0f5132", "#20c997", "#ffd166"],
+            ["#2b091c", "#590d22", "#ff4d6d", "#ffb703"],
+            ["#0c1821", "#1b2a4a", "#00b4d8", "#90e0ef"]
+        ];
+        const pal = palettes[Math.abs(hash) % palettes.length];
+
+        const bgGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        bgGrad.addColorStop(0, pal[0]);
+        bgGrad.addColorStop(0.55, pal[1]);
+        bgGrad.addColorStop(1, pal[0]);
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < 10; i++) {
+            const cx = rand() * canvas.width;
+            const cy = rand() * canvas.height;
+            const rad = 60 + rand() * 190;
+            const g = ctx.createRadialGradient(cx, cy, 4, cx, cy, rad);
+            const col = pal[2 + (i % 2)];
+            g.addColorStop(0, col + "66");
+            g.addColorStop(1, "transparent");
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // জ্যামিতিক ও আর্টিস্টিক লেয়ার
+        ctx.save();
+        for (let i = 0; i < 14; i++) {
+            const x = 60 + rand() * (canvas.width - 120);
+            const y = 60 + rand() * (canvas.height - 120);
+            const r = 18 + rand() * 75;
+            ctx.strokeStyle = (i % 2 === 0 ? pal[2] : pal[3]) + "99";
+            ctx.lineWidth = 2 + rand() * 3;
+            ctx.beginPath();
+            if (i % 3 === 0) {
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+            } else if (i % 3 === 1) {
+                ctx.moveTo(x, y - r);
+                ctx.lineTo(x + r, y + r);
+                ctx.lineTo(x - r, y + r);
+                ctx.closePath();
+            } else {
+                ctx.roundRect(x - r / 2, y - r / 2, r, r * 0.7, 12);
+            }
+            ctx.stroke();
+        }
+        ctx.restore();
+
+        // নিচে ক্যাপশন ব্যানার
+        ctx.fillStyle = "rgba(10, 13, 22, 0.72)";
+        ctx.fillRect(0, canvas.height - 84, canvas.width, 84);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 22px 'Segoe UI', Arial, sans-serif";
+        ctx.textAlign = "center";
+        const label = promptText.length > 52 ? promptText.slice(0, 52) + "..." : promptText;
+        ctx.fillText(label, canvas.width / 2, canvas.height - 46);
+
+        ctx.fillStyle = pal[2];
+        ctx.font = "600 13px 'Segoe UI', Arial, sans-serif";
+        ctx.fillText("Ridoy AI Studio • Text-to-Image", canvas.width / 2, canvas.height - 20);
+
+        return canvas.toDataURL("image/jpeg", 0.92);
+    }
+
     function buildRecentMessagesForContext() {
         const sess = chatSessions.find(s => s.id === currentSessionId);
         if (!sess || !Array.isArray(sess.messages)) return [];
@@ -1602,11 +1580,29 @@
         appendMessage(text, 'user', null, null, false, true, nowTs);
         if (!textToSend) input.value = '';
 
+        // লেখা দিয়ে ছবি বানানোর অনুরোধ হলে
+        const imgPrompt = extractImagePrompt(text);
+        if (imgPrompt) {
+            const statusImgEl = appendMessage("🎨 আপনার লেখা অনুযায়ী ছবি তৈরি করা হচ্ছে...", "status-msg", null, null, false, false, Date.now());
+            const generatedUrl = generateArtworkFromPrompt(imgPrompt);
+            statusImgEl.remove();
+            const caption = `"${imgPrompt}" অনুযায়ী ছবি তৈরি করা হয়েছে:`;
+            appendMessage(caption, "ai", generatedUrl, `ridoy-ai-${Date.now()}.jpg`, true, true, Date.now());
+
+            if (isFromLiveVoice && liveConversationActive) {
+                setLiveBanner("🔊 Ridoy AI বলছে...");
+                speakTextClear(`${imgPrompt} এর ছবি তৈরি করা হয়েছে। আর কী জানতে চান?`, () => {
+                    if (liveConversationActive) listenOnceInLiveMode();
+                });
+            }
+            return;
+        }
+
         if (isCreatorQuestion(text)) {
             appendMessage(CREATOR_REPLY, "ai", null, null, true, true, Date.now());
             if (isFromLiveVoice && liveConversationActive) {
                 setLiveBanner("🔊 Ridoy AI বলছে...");
-                speakTextWithSelectedVoice(CREATOR_REPLY, () => {
+                speakTextClear(CREATOR_REPLY, () => {
                     if (liveConversationActive) listenOnceInLiveMode();
                 });
             }
@@ -1617,7 +1613,7 @@
             appendMessage(HOME_ADDRESS_REPLY, "ai", null, null, true, true, Date.now());
             if (isFromLiveVoice && liveConversationActive) {
                 setLiveBanner("🔊 Ridoy AI বলছে...");
-                speakTextWithSelectedVoice(HOME_ADDRESS_REPLY, () => {
+                speakTextClear(HOME_ADDRESS_REPLY, () => {
                     if (liveConversationActive) listenOnceInLiveMode();
                 });
             }
@@ -1628,7 +1624,7 @@
             ? `\nঅতিরিক্ত মেমোরি:\n- ${savedMemories.join("\n- ")}`
             : "";
 
-        const systemPrompt = `তুমি Ridoy AI। কেউ যদি জিজ্ঞাসা করে তোমাকে কে তৈরি করেছে বা কে বানিয়েছে, তাহলে উত্তর দেবে: "${CREATOR_REPLY}" কেউ যদি হৃদয় স্যারের বাসা বা ঠিকানা সম্পর্কে জিজ্ঞাসা করে, তাহলে উত্তর দেবে: "${HOME_ADDRESS_REPLY}" ${isFromLiveVoice ? "সরাসরি কথোপকথনের মতো স্বাভাবিক, সাবলীল ও সংক্ষিপ্তভাবে উত্তর দাও।" : "বাংলায় সংক্ষিপ্ত ও স্পষ্টভাবে উত্তর দাও।"}${memoryPart}`;
+        const systemPrompt = `তুমি Ridoy AI, একটি আধুনিক ও সহায়ক AI সহকারী। কেউ যদি জিজ্ঞাসা করে তোমাকে কে তৈরি করেছে বা কে বানিয়েছে, তাহলে উত্তর দেবে: "${CREATOR_REPLY}" কেউ যদি হৃদয় স্যারের বাসা বা ঠিকানা সম্পর্কে জিজ্ঞাসা করে, তাহলে উত্তর দেবে: "${HOME_ADDRESS_REPLY}" ${isFromLiveVoice ? "সরাসরি কথোপকথনের মতো স্বাভাবিক, পরিষ্কার ও সংক্ষিপ্তভাবে উত্তর দাও।" : "বাংলায় স্পষ্ট ও সুন্দরভাবে উত্তর দাও।"}${memoryPart}`;
         const statusEl = appendMessage("ভাবছি...", "status-msg", null, null, false, false, Date.now());
         if (isFromLiveVoice && liveConversationActive) {
             setLiveBanner("🤔 উত্তর তৈরি হচ্ছে...");
@@ -1674,8 +1670,8 @@
             appendMessage(reply, "ai", null, null, true, true, Date.now());
 
             if (isFromLiveVoice && liveConversationActive) {
-                setLiveBanner("🔊 Ridoy AI সরাসরি বলছে...");
-                speakTextWithSelectedVoice(reply, () => {
+                setLiveBanner("🔊 Ridoy AI পরিষ্কার ভয়েসে বলছে...");
+                speakTextClear(reply, () => {
                     if (liveConversationActive) {
                         listenOnceInLiveMode();
                     }
@@ -1759,7 +1755,7 @@
         return msgDiv;
     }
 
-    // বাম প্লাস (+) মেনু অ্যাকশনসমূহ: গ্যালারি এডিট, সরাসরি ফটো ও ফাইল/ডকুমেন্টস
+    // বাম প্লাস (+) মেনু অ্যাকশনসমূহ
     window.chooseGalleryEdit = () => {
         closeAllOverlays();
         const inp = document.getElementById("imageEditInput");
@@ -1806,8 +1802,7 @@
             } catch (_) {}
         }
 
-        const displaySummary = `ফাইল/ডকুমেন্ট পাঠানো হয়েছে: ${file.name}`;
-        appendMessage(displaySummary, "user", null, null, false, true, Date.now(), {
+        appendMessage(`ফাইল/ডকুমেন্ট পাঠানো হয়েছে: ${file.name}`, "user", null, null, false, true, Date.now(), {
             name: file.name,
             sizeText
         });
@@ -1914,7 +1909,7 @@
 
         closeAiImageModal();
         appendMessage(`নির্দেশনা: "${promptText}"`, "user", imgData, null, false, true, Date.now());
-        const statusEl = appendMessage("ছবি অটোমেটিক এডিট করা হচ্ছে...", "status-msg", null, null, false, false, Date.now());
+        const statusEl = appendMessage("ছবি এডিট করা হচ্ছে...", "status-msg", null, null, false, false, Date.now());
 
         try {
             const tempImg = new Image();
@@ -1941,7 +1936,7 @@
         }
     };
 
-    // সরাসরি লাইভ ভয়েস কথোপকথন (আপনি প্রশ্ন বলবেন -> AI সরাসরি ভয়েসে উত্তর দেবে -> আবার শুনবে)
+    // সরাসরি লাইভ ভয়েস কথোপকথন
     function setLiveBanner(msg) {
         const el = document.getElementById("liveVoiceStatusText");
         if (el) el.innerText = msg;
@@ -2003,12 +1998,12 @@
                 setLiveBanner("🎤 আবার বলুন, শুনছি...");
                 setTimeout(() => {
                     if (liveConversationActive) listenOnceInLiveMode();
-                }, 350);
+                }, 300);
                 return;
             }
             setTimeout(() => {
                 if (liveConversationActive) listenOnceInLiveMode();
-            }, 600);
+            }, 550);
         };
 
         recognition.onend = () => {
@@ -2019,7 +2014,7 @@
             if (!gotSpeech && !(window.speechSynthesis && window.speechSynthesis.speaking)) {
                 setTimeout(() => {
                     if (liveConversationActive) listenOnceInLiveMode();
-                }, 300);
+                }, 280);
             }
         };
 
@@ -2053,10 +2048,7 @@
                 liveRecognition = null;
             }
         } catch (_) {}
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            resetAllSpeakerButtons();
-        }
+        stopSpeechNow();
     };
 </script>
 
