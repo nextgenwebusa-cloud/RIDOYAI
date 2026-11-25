@@ -1119,7 +1119,7 @@
         signOut
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    /* ================= কনফিগারেশন ================= */
+    /* ================= কনফিগারেশন (নিজে হাতে ৩টি AI Key বসান) ================= */
     const firebaseConfig = {
         apiKey: "AIzaSyDnu0fxgwSacDIx39D88f5JQAMd5eijfaQ",
         authDomain: "ridoy-bb390.firebaseapp.com",
@@ -1129,11 +1129,15 @@
         appId: "1:119513770341:web:c96d978c886ec2d1bc598c"
     };
 
-    const RAW_GROQ_KEY = "Gsk_SwqSsRCBOBiWxs6eprX1WGdyb3FYr6zTgFa0tCEXeYMt0tLLMIQr";
+    // ১. Groq API Key (চ্যাট, ফ্রম/প্রম্পট ও অ্যাপ/সফটওয়্যার কোড)
+    const RAW_GROQ_KEY = "YOUR_GROQ_API_KEY_HERE";
     const GROQ_API_KEY = RAW_GROQ_KEY.trim().replace(/^Gsk_/, "gsk_");
 
-    const POLLINATIONS_API_KEY = "sk_XXkgcLjLU4euEy7oU5AKp9AnvBUmSTK1";
-    const OPENAI_API_KEY = "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";
+    // ২. Pollinations API Key (লোগো, থাম্বনেইল ও ছবি জেনারেট)
+    const POLLINATIONS_API_KEY = "YOUR_POLLINATIONS_API_KEY_HERE";
+
+    // ৩. OpenAI API Key (ছবি প্রো এডিট)
+    const OPENAI_API_KEY = "YOUR_OPENAI_API_KEY_HERE";
 
     const CREATOR_REPLY = "আমাকে হৃদয় স্যার বানিয়েছে।";
     const HOME_ADDRESS_REPLY = "হৃদয় স্যারের বাসা পাবনা জেলায়। সম্পূর্ণ ঠিকানা: পাবনা জেলা, কাশিনাথপুর আমিনপুর থানা, উপজেলা বেড়া, গ্রাম বড় দুর্গাপুর, ইউনিয়ন ঢালারচর।";
@@ -1725,7 +1729,11 @@
         }
     });
 
-    /* ================= চ্যাট, ছবি জেনারেট ও সফটওয়্যার/অ্যাপ কোড রাইটার ================= */
+    /* ================= ১. Groq, ২. Pollinations, ৩. OpenAI ইন্টিগ্রেশন ================= */
+    function hasKey(val, placeholder) {
+        return typeof val === "string" && val.trim() !== "" && val.trim() !== placeholder;
+    }
+
     async function loadMemories() {
         try {
             const querySnapshot = await getDocs(collection(db, "ai_memory"));
@@ -1742,6 +1750,7 @@
     }
 
     async function refreshChatModels() {
+        if (!hasKey(GROQ_API_KEY, "YOUR_GROQ_API_KEY_HERE")) return;
         try {
             const res = await fetch("https://api.groq.com/openai/v1/models", {
                 headers: { "Authorization": `Bearer ${GROQ_API_KEY}` }
@@ -1814,23 +1823,28 @@
         const ctx = canvas.getContext("2d");
 
         const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        grad.addColorStop(0, "#0f172a");
-        grad.addColorStop(0.5, "#1e1b4b");
-        grad.addColorStop(1, "#090d16");
+        grad.addColorStop(0, "#1d4ed8");
+        grad.addColorStop(0.5, "#7c3aed");
+        grad.addColorStop(1, "#ec4899");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const rg = ctx.createRadialGradient(canvas.width * 0.5, canvas.height * 0.45, 20, canvas.width * 0.5, canvas.height * 0.45, canvas.width * 0.45);
-        rg.addColorStop(0, isLogo ? "rgba(59, 130, 246, 0.35)" : "rgba(239, 68, 68, 0.28)");
-        rg.addColorStop(1, "transparent");
+        const rg = ctx.createRadialGradient(canvas.width * 0.5, canvas.height * 0.45, 20, canvas.width * 0.5, canvas.height * 0.45, canvas.width * 0.48);
+        rg.addColorStop(0, "rgba(255, 255, 255, 0.25)");
+        rg.addColorStop(1, "rgba(9, 13, 22, 0.45)");
         ctx.fillStyle = rg;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         if (isLogo) {
-            ctx.strokeStyle = "#60a5fa";
+            ctx.fillStyle = "rgba(15, 23, 42, 0.65)";
+            ctx.beginPath();
+            ctx.arc(300, 260, 148, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = "#fde047";
             ctx.lineWidth = 10;
             ctx.beginPath();
-            ctx.arc(300, 260, 140, 0, Math.PI * 2);
+            ctx.arc(300, 260, 148, 0, Math.PI * 2);
             ctx.stroke();
 
             ctx.fillStyle = "#ffffff";
@@ -1839,36 +1853,36 @@
             const initials = topic.replace(/[^a-zA-Z0-9\u0980-\u09FF\s]/g, "").trim().slice(0, 2).toUpperCase() || "YT";
             ctx.fillText(initials, 300, 286);
 
-            ctx.fillStyle = "#e2e8f0";
+            ctx.fillStyle = "#ffffff";
             ctx.font = "bold 30px 'Segoe UI', Arial, sans-serif";
-            ctx.fillText(topic.slice(0, 26), 300, 470);
+            ctx.fillText(topic.slice(0, 26), 300, 475);
         } else {
-            ctx.fillStyle = "#dc2626";
+            ctx.fillStyle = "#facc15";
             ctx.beginPath();
-            ctx.roundRect(70, 75, 260, 56, 12);
+            ctx.roundRect(70, 75, 290, 56, 14);
             ctx.fill();
 
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "bold 26px 'Segoe UI', Arial, sans-serif";
+            ctx.fillStyle = "#0f172a";
+            ctx.font = "bold 25px 'Segoe UI', Arial, sans-serif";
             ctx.textAlign = "left";
-            ctx.fillText("YOUTUBE PRO", 96, 112);
+            ctx.fillText("RIDOY AI DESIGN", 94, 112);
 
             ctx.fillStyle = "#ffffff";
             ctx.font = "bold 68px 'Segoe UI', Arial, sans-serif";
             ctx.fillText(topic.slice(0, 24), 70, 270);
             if (topic.slice(24, 48)) {
-                ctx.fillStyle = "#fbbf24";
+                ctx.fillStyle = "#fef08a";
                 ctx.fillText(topic.slice(24, 48), 70, 360);
             }
 
-            ctx.fillStyle = "rgba(255,255,255,0.12)";
+            ctx.fillStyle = "rgba(15, 23, 42, 0.65)";
             ctx.beginPath();
-            ctx.roundRect(70, 440, 540, 74, 14);
+            ctx.roundRect(70, 440, 560, 74, 14);
             ctx.fill();
 
-            ctx.fillStyle = "#93c5fd";
+            ctx.fillStyle = "#ffffff";
             ctx.font = "bold 26px 'Segoe UI', Arial, sans-serif";
-            ctx.fillText("Ridoy AI Studio • High CTR Design", 95, 486);
+            ctx.fillText("Colorful Studio • Ready to Download", 95, 486);
         }
 
         return canvas.toDataURL("image/jpeg", 0.92);
@@ -1876,14 +1890,16 @@
 
     async function generateVisualWithMultiEngine(kind, topic) {
         const promptMap = {
-            logo: `modern professional youtube channel logo icon for ${topic}, minimal vector badge, clean bold graphic, high contrast, dark studio background`,
-            thumbnail: `eye catching youtube thumbnail background for ${topic}, dramatic lighting, high contrast, vibrant colors, no clutter`,
-            image: `${topic}, high quality, sharp details, professional digital art`
+            logo: `vibrant colorful modern youtube channel logo icon for ${topic}, clean bold graphic, high contrast, studio lighting`,
+            thumbnail: `vibrant colorful eye catching youtube thumbnail for ${topic}, dramatic lighting, high contrast, bold visual`,
+            image: `${topic}, vibrant colorful high quality digital art, sharp details`
         };
         const pText = encodeURIComponent(promptMap[kind] || promptMap.image);
         const w = kind === "logo" ? 512 : (kind === "thumbnail" ? 1280 : 768);
         const h = kind === "logo" ? 512 : (kind === "thumbnail" ? 720 : 512);
-        const keyParam = POLLINATIONS_API_KEY ? `&key=${encodeURIComponent(POLLINATIONS_API_KEY)}` : "";
+        const keyParam = hasKey(POLLINATIONS_API_KEY, "YOUR_POLLINATIONS_API_KEY_HERE")
+            ? `&key=${encodeURIComponent(POLLINATIONS_API_KEY.trim())}`
+            : "";
         const remoteUrl = `https://image.pollinations.ai/prompt/${pText}?width=${w}&height=${h}&nologo=true&seed=${Date.now()}${keyParam}`;
 
         try {
@@ -1996,6 +2012,11 @@
                     if (fullVoiceOpen && continuousVoiceLoop) listenOnceInFullVoice();
                 });
             }
+            return;
+        }
+
+        if (!hasKey(GROQ_API_KEY, "YOUR_GROQ_API_KEY_HERE")) {
+            appendMessage("❌ কোডের ভেতরে GROQ_API_KEY বসান।", "error-msg", null, null, false, false, Date.now());
             return;
         }
 
@@ -2168,7 +2189,7 @@
         }
     };
 
-    /* ================= প্রফেশনাল ফটো এডিট ও ফ্রম ================= */
+    /* ================= ৩ নম্বর: OpenAI ইমেজ এডিট + ক্যানভাস প্রো এডিটর ================= */
     let currentSelectedDataUrl = "";
     let modalRotationDeg = 0;
     let modalFlipX = 1;
@@ -2295,7 +2316,7 @@
     }
 
     async function tryOpenAiImageEdit(dataUrl, promptText) {
-        if (!OPENAI_API_KEY) return null;
+        if (!hasKey(OPENAI_API_KEY, "YOUR_OPENAI_API_KEY_HERE")) return null;
         try {
             const blob = await (await fetch(dataUrl)).blob();
             const fd = new FormData();
@@ -2306,7 +2327,7 @@
 
             const res = await fetch("https://api.openai.com/v1/images/edits", {
                 method: "POST",
-                headers: { "Authorization": `Bearer ${OPENAI_API_KEY}` },
+                headers: { "Authorization": `Bearer ${OPENAI_API_KEY.trim()}` },
                 body: fd
             });
             const json = await res.json();
